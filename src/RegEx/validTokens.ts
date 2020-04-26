@@ -8,9 +8,9 @@ export const NUMBERS = "0123456789".split("");
 
 export const ParOpen = Automata.singleSymbol("(");
 export const ParClose = Automata.singleSymbol(")");
-export const Star = Automata.singleSymbol("*");
-export const Plus = Automata.singleSymbol("+");
-export const Or = Automata.singleSymbol("|");
+export const Star = Automata.singleSymbol("*", "STAR");
+export const Plus = Automata.singleSymbol("+", "PLUS");
+export const Or = Automata.singleSymbol("|", "OR");
 
 export const Literal = new Automata(
   [

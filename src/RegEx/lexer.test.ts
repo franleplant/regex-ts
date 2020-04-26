@@ -8,6 +8,7 @@ test("Lexer par and literals", (t) => {
     new Token("(", "("),
     new Token("LITERAL", "a"),
     new Token(")", ")"),
+    Token.EOF(),
   ];
 
   t.deepEqual(tokens, expectedTokens);
@@ -19,6 +20,7 @@ test("Lexer bigger literals", (t) => {
     new Token("(", "("),
     new Token("LITERAL", "abc123"),
     new Token(")", ")"),
+    Token.EOF(),
   ];
 
   t.deepEqual(tokens, expectedTokens);
@@ -28,8 +30,9 @@ test("Lexer or", (t) => {
   const tokens = lex("a|b");
   const expectedTokens = [
     new Token("LITERAL", "a"),
-    new Token("|", "|"),
+    new Token("OR", "|"),
     new Token("LITERAL", "b"),
+    Token.EOF(),
   ];
 
   t.deepEqual(tokens, expectedTokens);
@@ -40,10 +43,11 @@ test("Lexer compound", (t) => {
   const expectedTokens = [
     new Token("(", "("),
     new Token("LITERAL", "hello"),
-    new Token("|", "|"),
+    new Token("OR", "|"),
     new Token("LITERAL", "bye"),
     new Token(")", ")"),
     new Token("LITERAL", "fran"),
+    Token.EOF(),
   ];
 
   t.deepEqual(tokens, expectedTokens);

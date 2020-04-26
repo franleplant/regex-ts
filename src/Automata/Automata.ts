@@ -2,8 +2,8 @@ import { IDelta, IState, ISymbol } from "./types";
 import Delta from "./Delta";
 
 export default class Automata {
-  static singleSymbol(symbol: ISymbol): Automata {
-    return new Automata([[0, symbol, 1]], [1], symbol);
+  static singleSymbol(symbol: ISymbol, label?: string): Automata {
+    return new Automata([[0, symbol, 1]], [1], label || symbol);
   }
 
   state: IState = 0;

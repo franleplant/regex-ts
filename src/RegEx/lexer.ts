@@ -15,12 +15,8 @@ export default function lex(rawInput: string): Array<Token> {
   let index = 0;
   let lexeme = "";
 
-  while (true) {
-    // Check end of input
-    if (index >= input.length) {
-      break;
-    }
-
+  // cycle until we consume all the input
+  while (index < input.length) {
     const char = input[index];
 
     // skip this cycle and go to the next
@@ -30,48 +26,47 @@ export default function lex(rawInput: string): Array<Token> {
       continue;
     }
 
-    //console.log("char", char)
-
-    let allTrapped = false;
-    let prevCandidates: Array<TokenKind> = [];
+    // Let's find the longest prefix string that is
+    // a valid token
     let candidates: Array<TokenKind> = [];
-    while (!allTrapped) {
-      // under the asumption that no
-      // automata will accept whitespaces
-      // this is safe to do here since
-      // we always have a whitespace at the end
+    while (true) {
+      // under the asumption that no token will accept whitespaces
+      // this is safe to do here without other checks
       const char = input[index];
-      const result = ingestChar(automatas, char);
-      //console.log("result", result, index, char)
+      const next = ingestChar(automatas, char);
+
+      //console.log("next", next, index, char)
+      if (next.allTrapped) {
+        break;
+      }
 
       // Prepare to the next iteration
-      allTrapped = result.allTrapped;
-      prevCandidates = candidates;
-      candidates = result.candidates;
+      candidates = next.candidates;
       lexeme += char;
       index += 1;
     }
 
-    // all trapped means that right before this iteration
-    // was the longest string we accept
+    // At this point means that this was the longest
+    // string that is a valid token
 
-    //console.log("candidates", prevCandidates);
-    if (prevCandidates.length === 0) {
-      throw new Error("wrong token");
+    //console.log("candidates", candidates);
+    if (candidates.length === 0) {
+      throw new Error(`Parser Error: unexpected token ${lexeme}`);
     }
 
     // produce the new token with the information
     // in the previous iteration
-    const token = new Token(prevCandidates[0], lexeme.slice(0, -1));
+    const token = new Token(candidates[0], lexeme);
     tokens.push(token);
     //console.log("new token", token);
 
     // Cleanup
     lexeme = "";
-    index -= 1;
     reset(automatas);
   }
 
+  // add an EOF token
+  tokens.push(Token.EOF());
   return tokens;
 }
 
