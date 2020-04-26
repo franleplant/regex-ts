@@ -11,9 +11,7 @@ export default function lex(rawInput: string): Array<Token> {
   // We add a space as a form of input termination
   const input = rawInput + " ";
   const tokens: Array<Token> = [];
-
   let index = 0;
-  let lexeme = "";
 
   // cycle until we consume all the input
   while (index < input.length) {
@@ -29,6 +27,7 @@ export default function lex(rawInput: string): Array<Token> {
     // Let's find the longest prefix string that is
     // a valid token
     let candidates: Array<TokenKind> = [];
+    let lexeme = "";
     while (true) {
       // under the asumption that no token will accept whitespaces
       // this is safe to do here without other checks
@@ -46,10 +45,9 @@ export default function lex(rawInput: string): Array<Token> {
       index += 1;
     }
 
-    // At this point means that this was the longest
-    // string that is a valid token
+    // If we got here it means that we found the longest
+    // string that is a valid token or we found an error
 
-    //console.log("candidates", candidates);
     if (candidates.length === 0) {
       throw new Error(`Parser Error: unexpected token ${lexeme}`);
     }
