@@ -8,11 +8,20 @@
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
     "typecheck": "tsc --noEmit",
     "test:format": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md}\"",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test:unit": "ava",
+    "test": "npm run test:format"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "ava": {
+    "extensions": [
+      "ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ]
+  },
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
@@ -29,6 +38,7 @@
     "typescript": "^3.8.3"
   },
   "devDependencies": {
+    "ava": "^3.7.1",
     "husky": "^4.2.5",
     "lint-staged": "^10.1.7",
     "prettier": "^2.0.5"
