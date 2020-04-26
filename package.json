@@ -8,7 +8,7 @@
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
     "typecheck": "tsc --noEmit",
     "test:format": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md}\"",
-    "test:unit": "ava",
+    "test:unit": "ava \"src/**/*.test.ts\"",
     "test": "npm run test:format"
   },
   "keywords": [],
