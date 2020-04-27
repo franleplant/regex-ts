@@ -1,4 +1,4 @@
-import Parser from "./Parser";
+import Parser from "./index";
 import debugFactory from "debug";
 
 const debug = debugFactory("parser");
@@ -17,6 +17,9 @@ export function logVT(message: string) {
   ): PropertyDescriptor => {
     const method = descriptor.value;
 
+    // wrap the VT method in debug statements.
+    // Track when the method is called and when its recursive
+    // calls are resolved
     descriptor.value = function (this: Parser, ...args: any[]) {
       const trackId = this.getTrackId();
       debug(

@@ -1,7 +1,7 @@
 import debugFactory from "debug";
-import Token, { TokenKind } from "./Token";
-import ASTree from "./ASTree";
-import { logVT } from "./parserLogger";
+import Token, { TokenKind } from "../Token";
+import ASTree from "../ASTree";
+import { logVT } from "./logger";
 
 const debug = debugFactory("parser");
 

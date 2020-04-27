@@ -1,6 +1,6 @@
 import test from "ava";
-import Parser from "./Parser";
-import Token from "./Token";
+import Parser from "./index";
+import Token from "../Token";
 
 test.skip("Parser S -> Literal", (t) => {
   const parser = new Parser([new Token("LITERAL", ""), Token.EOF()]);
