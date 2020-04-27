@@ -1,15 +1,26 @@
 import test from "ava";
 import Parser from "./index";
 import Token from "../Token";
+import ASTree from "../ASTree";
 
-test.skip("Parser S -> Literal", (t) => {
-  const parser = new Parser([new Token("LITERAL", ""), Token.EOF()]);
+test("Parser simple literal: a", (t) => {
+  const parser = new Parser([new Token("LITERAL", "a"), Token.EOF()]);
 
-  console.log("RESULT", JSON.stringify(parser.parse(), null, 2));
-  t.is(true, false);
+  const tree = parser.parse();
+  const expected = new ASTree({
+    kind: "ROOT",
+    children: [
+      new ASTree({
+        kind: "LITERAL",
+        lexeme: "a",
+      }),
+    ],
+  });
+
+  t.deepEqual(tree, expected);
 });
 
-test.skip("Parser S -> (S)", (t) => {
+test("Parser parenthesis: ((abc))", (t) => {
   const parser = new Parser([
     new Token("(", ""),
     new Token("(", ""),
@@ -19,26 +30,53 @@ test.skip("Parser S -> (S)", (t) => {
     Token.EOF(),
   ]);
 
-  console.log("RESULT", JSON.stringify(parser.parse(), null, 2));
-  t.is(true, false);
+  const tree = parser.parse();
+  const expected = new ASTree({
+    kind: "ROOT",
+    children: [
+      new ASTree({
+        kind: "LITERAL",
+        lexeme: "abc",
+      }),
+    ],
+  });
+
+  t.deepEqual(tree, expected);
 });
 
-test.skip("Parser Union1", (t) => {
+test("Parser Union: a|b", (t) => {
   const parser = new Parser([
-    // TODO constants
     new Token("LITERAL", "a"),
     new Token("OR", ""),
     new Token("LITERAL", "b"),
     Token.EOF(),
   ]);
 
-  console.log("RESULT", JSON.stringify(parser.parse(), null, 2));
-  t.is(true, false);
+  const tree = parser.parse();
+  const expected = new ASTree({
+    kind: "ROOT",
+    children: [
+      new ASTree({
+        kind: "UNION",
+        children: [
+          new ASTree({
+            kind: "LITERAL",
+            lexeme: "a",
+          }),
+          new ASTree({
+            kind: "LITERAL",
+            lexeme: "b",
+          }),
+        ],
+      }),
+    ],
+  });
+
+  t.deepEqual(tree, expected);
 });
 
-test.skip("Parser Union2", (t) => {
+test("Parser Union: a|b(abc)", (t) => {
   const parser = new Parser([
-    // TODO constants
     new Token("LITERAL", "a"),
     new Token("OR", ""),
     new Token("LITERAL", "b"),
@@ -48,13 +86,40 @@ test.skip("Parser Union2", (t) => {
     Token.EOF(),
   ]);
 
-  console.log("RESULT", JSON.stringify(parser.parse(), null, 2));
-  t.is(true, false);
+  const tree = parser.parse();
+  const expected = new ASTree({
+    kind: "ROOT",
+    children: [
+      new ASTree({
+        kind: "UNION",
+        children: [
+          new ASTree({
+            kind: "LITERAL",
+            lexeme: "a",
+          }),
+          new ASTree({
+            kind: "INTERSECTION",
+            children: [
+              new ASTree({
+                kind: "LITERAL",
+                lexeme: "b",
+              }),
+              new ASTree({
+                kind: "LITERAL",
+                lexeme: "abc",
+              }),
+            ],
+          }),
+        ],
+      }),
+    ],
+  });
+
+  t.deepEqual(tree, expected);
 });
 
-test.skip("Parser Union3", (t) => {
+test("Parser Union: (a|b)abc", (t) => {
   const parser = new Parser([
-    // TODO constants
     new Token("(", ""),
     new Token("LITERAL", "a"),
     new Token("OR", ""),
@@ -64,11 +129,39 @@ test.skip("Parser Union3", (t) => {
     Token.EOF(),
   ]);
 
-  console.log("RESULT", JSON.stringify(parser.parse(), null, 2));
-  t.is(true, false);
+  const tree = parser.parse();
+  const expected = new ASTree({
+    kind: "ROOT",
+    children: [
+      new ASTree({
+        kind: "INTERSECTION",
+        children: [
+          new ASTree({
+            kind: "UNION",
+            children: [
+              new ASTree({
+                kind: "LITERAL",
+                lexeme: "a",
+              }),
+              new ASTree({
+                kind: "LITERAL",
+                lexeme: "b",
+              }),
+            ],
+          }),
+          new ASTree({
+            kind: "LITERAL",
+            lexeme: "abc",
+          }),
+        ],
+      }),
+    ],
+  });
+
+  t.deepEqual(tree, expected);
 });
 
-test("Parser Star", (t) => {
+test("Parser Star: a*b", (t) => {
   const parser = new Parser([
     new Token("LITERAL", "a"),
     new Token("STAR", ""),
@@ -76,6 +169,66 @@ test("Parser Star", (t) => {
     Token.EOF(),
   ]);
 
-  console.log("RESULT", JSON.stringify(parser.parse(), null, 2));
-  t.is(true, false);
+  const tree = parser.parse();
+  const expected = new ASTree({
+    kind: "ROOT",
+    children: [
+      new ASTree({
+        kind: "INTERSECTION",
+        children: [
+          new ASTree({
+            kind: "STAR",
+            children: [
+              new ASTree({
+                kind: "LITERAL",
+                lexeme: "a",
+              }),
+            ],
+          }),
+          new ASTree({
+            kind: "LITERAL",
+            lexeme: "b",
+          }),
+        ],
+      }),
+    ],
+  });
+
+  t.deepEqual(tree, expected);
+});
+
+test("Parser Plus: a+b", (t) => {
+  const parser = new Parser([
+    new Token("LITERAL", "a"),
+    new Token("PLUS", ""),
+    new Token("LITERAL", "b"),
+    Token.EOF(),
+  ]);
+
+  const tree = parser.parse();
+  const expected = new ASTree({
+    kind: "ROOT",
+    children: [
+      new ASTree({
+        kind: "INTERSECTION",
+        children: [
+          new ASTree({
+            kind: "PLUS",
+            children: [
+              new ASTree({
+                kind: "LITERAL",
+                lexeme: "a",
+              }),
+            ],
+          }),
+          new ASTree({
+            kind: "LITERAL",
+            lexeme: "b",
+          }),
+        ],
+      }),
+    ],
+  });
+
+  t.deepEqual(tree, expected);
 });

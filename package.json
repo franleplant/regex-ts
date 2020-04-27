@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit",
     "test:format": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md}\"",
     "test:unit": "ava \"src/**/*.test.ts\"",
-    "test": "npm run test:format"
+    "test": "npm run test:format && npm run typecheck && npm test:unit"
   },
   "keywords": [],
   "author": "",

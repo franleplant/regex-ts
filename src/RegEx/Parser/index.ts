@@ -78,10 +78,13 @@ export default class Parser {
       throw new Error(`Parser error`);
     }
 
-    return new ASTree({
+    const resultTree = new ASTree({
       kind: "ROOT",
       children: [tree],
     });
+
+    debug(`parse(): RESULT %O`, resultTree);
+    return resultTree;
   }
 
   @logVT("S -> Literal A")

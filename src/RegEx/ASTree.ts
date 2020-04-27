@@ -35,7 +35,6 @@ export default class ASTree {
     this.simplifyUnion();
     this.simplifyStar();
     this.simplifyPlus();
-    //this.simplifySingleChild()
   }
 
   isLambda(): boolean {
@@ -54,18 +53,6 @@ export default class ASTree {
       return;
     }
     this.children = this.children.filter((node) => !node?.isLambda());
-  }
-
-  simplifySingleChild() {
-    if (this.children?.length === 1) {
-      const singleChild = this.children[0];
-      if (!singleChild) {
-        throw new Error("ups");
-      }
-      this.kind = singleChild.kind;
-      this.lexeme = singleChild.lexeme;
-      this.children = singleChild.children;
-    }
   }
 
   simplifyIntersection() {
