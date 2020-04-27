@@ -232,3 +232,42 @@ test("Parser Plus: a+b", (t) => {
 
   t.deepEqual(tree, expected);
 });
+
+test("Parser Star: (a|b)*", (t) => {
+  const parser = new Parser([
+    new Token("(", ""),
+    new Token("LITERAL", "a"),
+    new Token("OR", ""),
+    new Token("LITERAL", "b"),
+    new Token(")", ""),
+    new Token("STAR", ""),
+    Token.EOF(),
+  ]);
+
+  const tree = parser.parse();
+  const expected = new ASTree({
+    kind: "ROOT",
+    children: [
+      new ASTree({
+        kind: "STAR",
+        children: [
+          new ASTree({
+            kind: "UNION",
+            children: [
+              new ASTree({
+                kind: "LITERAL",
+                lexeme: "a",
+              }),
+              new ASTree({
+                kind: "LITERAL",
+                lexeme: "b",
+              }),
+            ],
+          }),
+        ],
+      }),
+    ],
+  });
+
+  t.deepEqual(tree, expected);
+});

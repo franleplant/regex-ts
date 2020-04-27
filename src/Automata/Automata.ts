@@ -6,6 +6,21 @@ export default class Automata {
     return new Automata([[0, symbol, 1]], [1], label || symbol);
   }
 
+  static empty(): Automata {
+    return new Automata([], []);
+  }
+
+  static word(word: string): Automata {
+    const symbols = word.split("");
+    const delta: IDelta = symbols.map((char, index) => [
+      index,
+      char,
+      index + 1,
+    ]);
+    const finals = [symbols.length];
+    return new Automata(delta, finals);
+  }
+
   state: IState = 0;
   public readonly label: string;
   private readonly delta: Delta;

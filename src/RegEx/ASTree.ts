@@ -7,6 +7,7 @@ export type NodeKind =
   | "PLUS"
   | "STAR";
 
+//TODO add more tests
 export default class ASTree {
   static readonly Lambda: ASTree = new ASTree({
     kind: "LAMBDA",
@@ -31,10 +32,10 @@ export default class ASTree {
 
     this.simplifyEmpty();
     this.simplifyLambda();
-    this.simplifyIntersection();
-    this.simplifyUnion();
     this.simplifyStar();
     this.simplifyPlus();
+    this.simplifyIntersection();
+    this.simplifyUnion();
   }
 
   isLambda(): boolean {
@@ -67,7 +68,7 @@ export default class ASTree {
     if (this.children.length === 1) {
       const singleChild = this.children[0];
       if (!singleChild) {
-        throw new Error(`simplifyIntersection wront single child`);
+        throw new Error(`simplifyIntersection wrong single child`);
       }
       this.kind = singleChild.kind;
       this.lexeme = singleChild.lexeme;
