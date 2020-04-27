@@ -4,15 +4,8 @@ export type NodeKind =
   | "INTERSECTION"
   | "LAMBDA"
   | "LITERAL"
-  | "UNION_first_children"
-  | "INTERSECTION_second_children"
+  | "PLUS"
   | "STAR";
-
-//export default interface ASTree {
-//kind: Kind;
-//lexeme?: string;
-//children?: Array<ASTree>;
-//}
 
 export default class ASTree {
   static readonly Lambda: ASTree = new ASTree({
@@ -41,6 +34,7 @@ export default class ASTree {
     this.simplifyIntersection();
     this.simplifyUnion();
     this.simplifyStar();
+    this.simplifyPlus();
     //this.simplifySingleChild()
   }
 
@@ -143,6 +137,34 @@ export default class ASTree {
       new ASTree({
         kind: "STAR",
         children: [starredTree],
+      }),
+      ...next,
+    ];
+
+    this.children = newChildren;
+  }
+
+  simplifyPlus() {
+    if (!this.children) {
+      return;
+    }
+
+    const plusTree = this.children[0];
+    if (!plusTree) {
+      return;
+    }
+
+    const plus = this.children[1];
+    if (plus?.kind !== "PLUS") {
+      return;
+    }
+
+    const next = plus.children || [];
+
+    const newChildren = [
+      new ASTree({
+        kind: "PLUS",
+        children: [plusTree],
       }),
       ...next,
     ];

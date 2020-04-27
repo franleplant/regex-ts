@@ -1,8 +1,6 @@
 import { Automata } from "../Automata";
-import Token from "./Token";
+import Token, { TokenKind } from "./Token";
 import { ParOpen, ParClose, Star, Plus, Or, Literal } from "./validTokens";
-
-export type TokenKind = string;
 
 // The order is important!
 const automatas: Array<Automata> = [ParOpen, ParClose, Star, Plus, Or, Literal];
@@ -78,7 +76,7 @@ function ingestChar(
     automata.ingestChar(char);
 
     if (automata.isAccepted()) {
-      candidates.push(automata.label);
+      candidates.push(automata.label as TokenKind);
       allTrapped = false;
     }
 

@@ -1,6 +1,7 @@
 import debugFactory from "debug";
-import Token from "./Token";
+import Token, { TokenKind } from "./Token";
 import ASTree from "./ASTree";
+import { logVT } from "./parserLogger";
 
 const debug = debugFactory("parser");
 
@@ -30,9 +31,9 @@ A -> lambda
 */
 
 export default class Parser {
-  private readonly tokens: Array<Token>;
-  private index: number = 0;
   private trackId: number = 1;
+  readonly tokens: Array<Token>;
+  index: number = 0;
 
   constructor(tokens: Array<Token>) {
     this.tokens = tokens;
@@ -46,11 +47,15 @@ export default class Parser {
     return id;
   }
 
+  getTokenStack(): Array<Token> {
+    return this.tokens.slice(this.index);
+  }
+
   getToken(): Token {
     return this.tokens[this.index];
   }
 
-  eatToken(tokenKind: string): Token | undefined {
+  eatToken(tokenKind: TokenKind): Token | undefined {
     const currentToken = this.getToken();
     if (currentToken.isKind(tokenKind)) {
       this.index += 1;
@@ -79,11 +84,8 @@ export default class Parser {
     });
   }
 
-  // S -> Literal A
+  @logVT("S -> Literal A")
   S1(): ASTree | undefined {
-    const trackId = this.getTrackId();
-    debug(`${trackId} S1(): S -> Literal A. %o`, this.tokens.slice(this.index));
-
     const literal = this.eatToken("LITERAL");
     if (!literal) {
       return;
@@ -97,7 +99,7 @@ export default class Parser {
       return;
     }
 
-    const tree = new ASTree({
+    return new ASTree({
       kind: "INTERSECTION",
       children: [
         new ASTree({
@@ -107,15 +109,10 @@ export default class Parser {
         subTree,
       ],
     });
-
-    debug(`${trackId} S1(): S -> Literal A. ret %o`, tree);
-    return tree;
   }
 
-  // S -> ( S ) A
+  @logVT("S -> ( S ) A")
   S2(): ASTree | undefined {
-    const trackId = this.getTrackId();
-    debug(`${trackId} S2(): S -> ( S ) A. %o`, this.tokens.slice(this.index));
     if (!this.eatToken("(")) {
       return;
     }
@@ -134,67 +131,52 @@ export default class Parser {
       return;
     }
 
-    const tree = new ASTree({
+    return new ASTree({
       kind: "INTERSECTION",
       children: [left, right],
     });
-    debug(`${trackId} S2(): S -> ( S ) A. ret %o`, tree);
-    return tree;
   }
 
+  @logVT("S -> any")
   S(): ASTree | undefined {
-    const trackId = this.getTrackId();
-    debug(`${trackId} S(). %o`, this.tokens.slice(this.index));
     let subTree;
 
     if ((subTree = this.S1())) {
-      debug(`${trackId} S(). S1() branch`);
       return subTree;
     }
 
     if ((subTree = this.S2())) {
-      debug(`${trackId} S(). S2() branch`);
       return subTree;
     }
 
-    debug(`${trackId} S(). Backtrack`);
     return;
   }
 
+  @logVT("A -> any")
   A(): ASTree | undefined {
-    const trackId = this.getTrackId();
-    debug(`${trackId} A(). %o`, this.tokens.slice(this.index));
     let subTree;
 
     if ((subTree = this.A1())) {
-      debug(`${trackId} A(). A1() branch`);
       return subTree;
     }
 
     if ((subTree = this.A2())) {
-      debug(`${trackId} A(). A2() branch`);
       return subTree;
     }
 
     if ((subTree = this.A3())) {
-      debug(`${trackId} A(). A3() branch`);
       return subTree;
     }
 
     if ((subTree = this.A4())) {
-      debug(`${trackId} A(). A4() branch`);
       return subTree;
     }
 
-    debug(`${trackId} A(). Lambda`);
     return ASTree.Lambda;
   }
 
-  // A -> | S A
+  @logVT("A -> | S A")
   A1(): ASTree | undefined {
-    const trackId = this.getTrackId();
-    debug(`${trackId} A1(): A -> | S A. %o`, this.tokens.slice(this.index));
-
     if (!this.eatToken("OR")) {
       return;
     }
@@ -209,61 +191,46 @@ export default class Parser {
       return;
     }
 
-    const tree = new ASTree({
+    return new ASTree({
       kind: "UNION",
       children: [leftTree, rightTree],
     });
-    debug(`${trackId} A1(): A -> | S A. ret %o`, tree);
-    return tree;
   }
 
-  // A -> * A
+  @logVT("A -> * A")
   A2(): ASTree | undefined {
-    const trackId = this.getTrackId();
-    debug(`${trackId} A2(): A -> * A. %o`, this.tokens.slice(this.index));
-
     if (!this.eatToken("STAR")) {
       return;
     }
 
-    const tree = new ASTree({
+    return new ASTree({
       kind: "STAR",
       children: [this.A()],
     });
-    debug(`${trackId} A2(): A -> * A. ret %o`, tree);
-    return tree;
   }
 
-  // A -> + A
+  @logVT("A -> + A")
   A3(): ASTree | undefined {
-    const trackId = this.getTrackId();
-    debug(`${trackId} A3(): A -> + A. %o`, this.tokens.slice(this.index));
-
     if (!this.eatToken("PLUS")) {
       return;
     }
 
-    const tree = this.A();
-    debug(`${trackId} A3(): A -> + A. ret %o`, tree);
-    return tree;
+    return new ASTree({
+      kind: "PLUS",
+      children: [this.A()],
+    });
   }
 
-  // A -> S A
+  @logVT("A -> S A")
   A4(): ASTree | undefined {
-    const trackId = this.getTrackId();
-    debug(`${trackId} A4(): A -> S A. %o`, this.tokens.slice(this.index));
-
     const left = this.S();
     if (!left) {
       return;
     }
 
-    const tree = new ASTree({
+    return new ASTree({
       kind: "INTERSECTION",
       children: [left, this.A()],
     });
-
-    debug(`${trackId} A4(): A -> S A. ret %o`, tree);
-    return tree;
   }
 }
