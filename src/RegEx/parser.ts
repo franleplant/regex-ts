@@ -1,9 +1,8 @@
+import debugFactory from "debug";
 import Token from "./Token";
 import ASTree from "./ASTree";
 
-const Lambda: ASTree = {
-  kind: "lambda",
-};
+const debug = debugFactory("parser");
 
 /*
 // Original
@@ -33,9 +32,18 @@ A -> lambda
 export default class Parser {
   private readonly tokens: Array<Token>;
   private index: number = 0;
+  private trackId: number = 1;
 
   constructor(tokens: Array<Token>) {
     this.tokens = tokens;
+  }
+
+  // Recursive grammar derivation id
+  // for debuggin
+  getTrackId(): number {
+    const id = this.trackId;
+    this.trackId += 1;
+    return id;
   }
 
   getToken(): Token {
@@ -46,6 +54,7 @@ export default class Parser {
     const currentToken = this.getToken();
     if (currentToken.isKind(tokenKind)) {
       this.index += 1;
+      debug(`eatToken(). %o`, currentToken);
       return currentToken;
     }
 
@@ -57,21 +66,23 @@ export default class Parser {
   }
 
   parse(): ASTree | undefined {
+    debug(`parse(): %o`, this.tokens);
     this.reset();
     const tree = this.S();
     if (!tree) {
       throw new Error(`Parser error`);
     }
 
-    return {
-      kind: "Root",
+    return new ASTree({
+      kind: "ROOT",
       children: [tree],
-    };
+    });
   }
 
   // S -> Literal A
   S1(): ASTree | undefined {
-    console.log("S1", this.getToken());
+    const trackId = this.getTrackId();
+    debug(`${trackId} S1(): S -> Literal A. %o`, this.tokens.slice(this.index));
 
     const literal = this.eatToken("LITERAL");
     if (!literal) {
@@ -86,21 +97,25 @@ export default class Parser {
       return;
     }
 
-    return simplify({
-      kind: "S",
+    const tree = new ASTree({
+      kind: "INTERSECTION",
       children: [
-        {
-          kind: literal.kind,
+        new ASTree({
+          kind: "LITERAL",
           lexeme: literal.lexeme,
-        },
+        }),
         subTree,
       ],
     });
+
+    debug(`${trackId} S1(): S -> Literal A. ret %o`, tree);
+    return tree;
   }
 
   // S -> ( S ) A
   S2(): ASTree | undefined {
-    console.log("S2", this.getToken());
+    const trackId = this.getTrackId();
+    debug(`${trackId} S2(): S -> ( S ) A. %o`, this.tokens.slice(this.index));
     if (!this.eatToken("(")) {
       return;
     }
@@ -119,51 +134,67 @@ export default class Parser {
       return;
     }
 
-    return simplify({
-      kind: "S",
+    const tree = new ASTree({
+      kind: "INTERSECTION",
       children: [left, right],
     });
+    debug(`${trackId} S2(): S -> ( S ) A. ret %o`, tree);
+    return tree;
   }
 
   S(): ASTree | undefined {
-    console.log("S", this.getToken());
+    const trackId = this.getTrackId();
+    debug(`${trackId} S(). %o`, this.tokens.slice(this.index));
     let subTree;
 
     if ((subTree = this.S1())) {
+      debug(`${trackId} S(). S1() branch`);
       return subTree;
     }
 
     if ((subTree = this.S2())) {
+      debug(`${trackId} S(). S2() branch`);
       return subTree;
     }
 
+    debug(`${trackId} S(). Backtrack`);
     return;
   }
 
   A(): ASTree | undefined {
+    const trackId = this.getTrackId();
+    debug(`${trackId} A(). %o`, this.tokens.slice(this.index));
     let subTree;
+
     if ((subTree = this.A1())) {
+      debug(`${trackId} A(). A1() branch`);
       return subTree;
     }
 
     if ((subTree = this.A2())) {
+      debug(`${trackId} A(). A2() branch`);
       return subTree;
     }
 
     if ((subTree = this.A3())) {
+      debug(`${trackId} A(). A3() branch`);
       return subTree;
     }
 
     if ((subTree = this.A4())) {
+      debug(`${trackId} A(). A4() branch`);
       return subTree;
     }
 
-    return Lambda;
+    debug(`${trackId} A(). Lambda`);
+    return ASTree.Lambda;
   }
 
   // A -> | S A
   A1(): ASTree | undefined {
-    console.log("A1", this.getToken());
+    const trackId = this.getTrackId();
+    debug(`${trackId} A1(): A -> | S A. %o`, this.tokens.slice(this.index));
+
     if (!this.eatToken("OR")) {
       return;
     }
@@ -178,145 +209,188 @@ export default class Parser {
       return;
     }
 
-    return {
-      //TODO constants
-      kind: "OR_first_children",
+    const tree = new ASTree({
+      kind: "UNION",
       children: [leftTree, rightTree],
-    };
+    });
+    debug(`${trackId} A1(): A -> | S A. ret %o`, tree);
+    return tree;
   }
 
   // A -> * A
   A2(): ASTree | undefined {
-    console.log("A2", this.getToken());
+    const trackId = this.getTrackId();
+    debug(`${trackId} A2(): A -> * A. %o`, this.tokens.slice(this.index));
+
     if (!this.eatToken("STAR")) {
       return;
     }
 
-    return this.A();
+    const tree = new ASTree({
+      kind: "STAR",
+      children: [this.A()],
+    });
+    debug(`${trackId} A2(): A -> * A. ret %o`, tree);
+    return tree;
   }
 
   // A -> + A
   A3(): ASTree | undefined {
-    console.log("A3", this.getToken());
+    const trackId = this.getTrackId();
+    debug(`${trackId} A3(): A -> + A. %o`, this.tokens.slice(this.index));
+
     if (!this.eatToken("PLUS")) {
       return;
     }
 
-    return this.A();
+    const tree = this.A();
+    debug(`${trackId} A3(): A -> + A. ret %o`, tree);
+    return tree;
   }
 
   // A -> S A
   A4(): ASTree | undefined {
-    console.log("A4", this.getToken());
+    const trackId = this.getTrackId();
+    debug(`${trackId} A4(): A -> S A. %o`, this.tokens.slice(this.index));
+
     const left = this.S();
     if (!left) {
       return;
     }
 
-    return this.A();
+    const tree = new ASTree({
+      kind: "INTERSECTION",
+      children: [left, this.A()],
+    });
+
+    debug(`${trackId} A4(): A -> S A. ret %o`, tree);
+    return tree;
   }
 }
 
-function simplify(oldTree: ASTree): ASTree {
-  let tree = {
-    ...oldTree,
-  };
+//function simplify(oldTree: ASTree): ASTree {
+//let tree = {
+//...oldTree,
+//};
 
-  tree = simplifySingleChildren(tree);
-  tree = simplifyUnion(tree);
-  return tree;
-}
+//tree = simplifyLambda(tree)
+//return tree
+//tree = simplifySingleChildren(tree);
+//tree = simplifyUnion(tree);
 
-function removeLambda(children: Array<ASTree>): Array<ASTree> {
-  return children.filter((a) => a !== Lambda);
-}
+////console.log("simplify", oldTree, tree)
+//return tree;
+//}
 
-function simplifySingleChildren(oldTree: ASTree): ASTree {
-  const tree = {
-    ...oldTree,
-  };
+//function removeLambda(children: Array<ASTree>): Array<ASTree> {
+//return children.filter((a) => a !== Lambda);
+//}
 
-  tree.children = removeLambda(tree.children as Array<ASTree>);
-  if (tree.children.length === 1) {
-    return tree.children[0];
-  }
+//function simplifyLambda(oldTree: ASTree): ASTree {
+//const tree = {
+//...oldTree,
+//};
 
-  return tree;
-}
+//tree.children = removeLambda(tree.children as Array<ASTree>);
+//return tree
+//}
 
-/*
+//function simplifySingleChildren(oldTree: ASTree): ASTree {
+//const tree = {
+//...oldTree,
+//};
 
-Got from this
-{
-  "kind": "S",
-  "children": [
-    {
-      "kind": "LITERAL",
-      "lexeme": "a"
-    },
-    {
-      "kind": "OR_first_children",
-      "children": [
-        {
-          "kind": "LITERAL",
-          "lexeme": "b"
-        },
-        subTree
-      ]
-    }
-  ]
-}
+//if (tree.children?.length === 1) {
+//return tree.children[0];
+//}
 
-to this:
+//return tree;
+//}
 
-{
-  "kind": "S",
-  "children": [
-    {
-      "kind": "OR",
-      children: [
-        {
-          "kind": "LITERAL",
-          "lexeme": "a"
-        },
-        {
-          "kind": "LITERAL",
-          "lexeme": "b"
-        },
-      ]
-    },
-    subTree
-  ]
-}
+///*
 
+//Got from this
+//{
+//"kind": "S",
+//"children": [
+//{
+//"kind": "LITERAL",
+//"lexeme": "a"
+//},
+//{
+//"kind": "OR_first_children",
+//"children": [
+//{
+//"kind": "S",
+//"children": [
+//{
+//"kind": "LITERAL",
+//"lexeme": "b"
+//},
+//{
+//"kind": "LITERAL",
+//"lexeme": "abc"
+//}
+//]
+//},
+//{
+//"kind": "lambda"
+//}
+//]
+//}
+//]
+//}
 
- */
-//TODO move this to ASTree
-// and create a proper class with methods
-// and for god sake add constants
-function simplifyUnion(oldTree: ASTree): ASTree {
-  const tree = {
-    ...oldTree,
-  };
+//to this:
 
-  //TODO constants
-  if (
-    Array.isArray(tree.children) &&
-    tree.children[1]?.kind === "OR_first_children"
-  ) {
-    const leftUnion = tree.children[0] as ASTree;
-    const rightUnion = tree.children[1]?.children?.[0] as ASTree;
-    const nextSubTree = tree.children[1]?.children?.[1] as ASTree;
-    const union = {
-      kind: "UNION",
-      children: [leftUnion, rightUnion],
-    };
+//{
+//"kind": "S",
+//"children": [
+//{
+//"kind": "UNION",
+//children: [
+//{
+//"kind": "LITERAL",
+//"lexeme": "a"
+//},
+//{
+//"kind": "LITERAL",
+//"lexeme": "b"
+//},
+//]
+//},
+//subTree
+//]
+//}
 
-    return {
-      kind: tree.kind,
-      children: removeLambda([union, nextSubTree]),
-    };
-  }
+//*/
+////TODO move this to ASTree
+//// and create a proper class with methods
+//// and for god sake add constants
+//function simplifyUnion(oldTree: ASTree): ASTree {
+//const tree = {
+//...oldTree,
+//};
 
-  return tree;
-}
+////TODO constants
+//if (
+//Array.isArray(tree.children) &&
+//tree.children[1]?.kind === "OR_first_children"
+//) {
+//const leftUnion = tree.children[0] as ASTree;
+//const rightUnion = tree.children[1]?.children?.[0] as ASTree;
+//const nextSubTree = tree.children[1]?.children?.[1] as ASTree;
+//const union = {
+//kind: "UNION",
+//children: [leftUnion, rightUnion],
+//};
+
+//return {
+//kind: tree.kind,
+//children: removeLambda([union, nextSubTree]),
+//};
+//}
+
+////console.log("simplifyUnion", oldTree, tree)
+//return tree;
+//}
