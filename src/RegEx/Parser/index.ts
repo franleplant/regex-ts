@@ -87,6 +87,44 @@ export default class Parser {
     return resultTree;
   }
 
+  @logVT("S -> any")
+  S(): ASTree | undefined {
+    let subTree;
+
+    if ((subTree = this.S1())) {
+      return subTree;
+    }
+
+    if ((subTree = this.S2())) {
+      return subTree;
+    }
+
+    return;
+  }
+
+  @logVT("A -> any")
+  A(): ASTree | undefined {
+    let subTree;
+
+    if ((subTree = this.A1())) {
+      return subTree;
+    }
+
+    if ((subTree = this.A2())) {
+      return subTree;
+    }
+
+    if ((subTree = this.A3())) {
+      return subTree;
+    }
+
+    if ((subTree = this.A4())) {
+      return subTree;
+    }
+
+    return ASTree.Lambda;
+  }
+
   @logVT("S -> Literal A")
   S1(): ASTree | undefined {
     const literal = this.eatToken("LITERAL");
@@ -138,44 +176,6 @@ export default class Parser {
       kind: "INTERSECTION",
       children: [left, right],
     });
-  }
-
-  @logVT("S -> any")
-  S(): ASTree | undefined {
-    let subTree;
-
-    if ((subTree = this.S1())) {
-      return subTree;
-    }
-
-    if ((subTree = this.S2())) {
-      return subTree;
-    }
-
-    return;
-  }
-
-  @logVT("A -> any")
-  A(): ASTree | undefined {
-    let subTree;
-
-    if ((subTree = this.A1())) {
-      return subTree;
-    }
-
-    if ((subTree = this.A2())) {
-      return subTree;
-    }
-
-    if ((subTree = this.A3())) {
-      return subTree;
-    }
-
-    if ((subTree = this.A4())) {
-      return subTree;
-    }
-
-    return ASTree.Lambda;
   }
 
   @logVT("A -> | S A")
