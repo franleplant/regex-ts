@@ -1,15 +1,20 @@
 import { IDelta, IState, ISymbol } from "./types";
 import Delta from "./Delta";
 
+export const INITIAL_STATE = 0;
+export const TRAP_STATE = -1;
+export const LAMBDA = "LAMBDA";
+
 export default class Automata {
-  static singleSymbol(symbol: ISymbol, label?: string): Automata {
-    return new Automata([[0, symbol, 1]], [1], label || symbol);
-  }
-
   static empty(): Automata {
-    return new Automata([], []);
+    return new Automata([], [INITIAL_STATE]);
   }
 
+  static singleSymbol(symbol: ISymbol, label?: string): Automata {
+    return new Automata([[INITIAL_STATE, symbol, 1]], [1], label || symbol);
+  }
+
+  // An automata for a single word
   static word(word: string): Automata {
     const symbols = word.split("");
     const delta: IDelta = symbols.map((char, index) => [
@@ -21,10 +26,10 @@ export default class Automata {
     return new Automata(delta, finals);
   }
 
-  state: IState = 0;
+  private state: IState = INITIAL_STATE;
   public readonly label: string;
-  private readonly delta: Delta;
-  private readonly finals: Array<IState>;
+  public readonly delta: Delta;
+  public readonly finals: Array<IState>;
 
   constructor(delta: IDelta, finals: Array<IState>, label?: string) {
     this.delta = new Delta(delta);
@@ -58,7 +63,7 @@ export default class Automata {
   }
 
   reset() {
-    this.state = 0;
+    this.state = INITIAL_STATE;
   }
 
   isAccepted() {
@@ -66,7 +71,7 @@ export default class Automata {
   }
 
   isTrapped() {
-    return this.state === -1;
+    return this.state === TRAP_STATE;
   }
 
   isNotAccepted() {

@@ -5,7 +5,7 @@ import { Automata, union, intersection, star, plus } from "../Automata";
 // This is a simple evalTreeuator function
 // that crawls the tree in a pre-order fashion
 // and computes a resulting automata
-export function evalTree(tree: ASTree): Automata {
+export default function evalTree(tree: ASTree): Automata {
   const { kind, lexeme, children } = tree;
   if (children?.length === 0) {
     return Automata.empty();
@@ -17,7 +17,9 @@ export function evalTree(tree: ASTree): Automata {
   }
 
   if (!children) {
-    throw new Error(`Invalid ASTree: No children`);
+    throw new Error(
+      `Invalid ASTree: No children ${JSON.stringify(tree, null, 2)}`
+    );
   }
 
   if (kind === "ROOT") {
@@ -53,7 +55,7 @@ export function evalTree(tree: ASTree): Automata {
       children.length === 1,
       "STAR should not have more than one children"
     );
-    return star(children[0] as ASTree);
+    return star(evalTree(children[0] as ASTree));
   }
 
   if (kind === "PLUS") {
@@ -61,8 +63,8 @@ export function evalTree(tree: ASTree): Automata {
       children.length === 1,
       "PLUS should not have more than one children"
     );
-    return plus(children[0] as ASTree);
+    return plus(evalTree(children[0] as ASTree));
   }
 
-  throw new Error(`invalid ASTree`);
+  throw new Error(`invalid ASTree ${JSON.stringify(tree, null, 2)}`);
 }
