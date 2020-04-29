@@ -1,7 +1,7 @@
 import { IState } from "../types";
 
 // Non Deterministic Automata State
-type NState = Set<IState>;
+export type NState = Set<IState>;
 
 interface IMarkLedger {
   [stateId: number]: boolean;

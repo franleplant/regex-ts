@@ -2,7 +2,7 @@ import { IDelta, IState, ISymbol } from "./types";
 
 export default class Delta {
   private delta: IDelta;
-  private map: Map<string, IState> = new Map();
+  private map: Map<string, Array<IState>> = new Map();
 
   constructor(delta: IDelta) {
     this.delta = delta;
@@ -16,19 +16,32 @@ export default class Delta {
 
       symbols.forEach((symbol) => {
         // we need to use string to make this comparable
-        this.map.set(JSON.stringify({ state, symbol }), nextState);
+        const key = JSON.stringify({ state, symbol });
+        // We want to store a list of next states to make this
+        // more generic to fit Non Deterministic Automata (NDA)
+        const nextStateList = this.map.get(key) || [];
+        nextStateList.push(nextState);
+        this.map.set(key, nextStateList);
       });
     });
   }
 
+  // Get the first state in the next state list
   get(state: IState, symbol: ISymbol): IState {
-    const nextState = this.map.get(JSON.stringify({ state, symbol }));
+    const nextStateList = this.map.get(JSON.stringify({ state, symbol })) || [];
 
-    if (nextState === undefined) {
+    if (nextStateList.length === 0) {
       return -1;
     }
 
-    return nextState;
+    return nextStateList[0];
+  }
+
+  // Get all the possible transitions from this state and symbol,
+  // this method should only be used in NDA
+  getNDA(state: IState, symbol: ISymbol): Array<IState> {
+    const nextStateList = this.map.get(JSON.stringify({ state, symbol }));
+    return nextStateList || [];
   }
 
   getArray(): IDelta {

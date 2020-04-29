@@ -1,5 +1,5 @@
 import assert from "assert";
-import ASTree from "./ASTree";
+import ASTree from "../ASTree";
 import { Automata, union, intersection, star, plus } from "../Automata";
 
 // This is a simple evalTreeuator function

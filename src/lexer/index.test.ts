@@ -1,5 +1,5 @@
 import test from "ava";
-import lex from "./lexer";
+import lex from "./index";
 import Token from "./Token";
 
 test("Lexer par and literals", (t) => {

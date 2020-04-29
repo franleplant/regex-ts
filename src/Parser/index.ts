@@ -1,5 +1,5 @@
 import debugFactory from "debug";
-import Token, { TokenKind } from "../Token";
+import Token, { TokenKind } from "../lexer/Token";
 import ASTree from "../ASTree";
 import { logVT } from "./logger";
 

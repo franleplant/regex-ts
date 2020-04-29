@@ -1,6 +1,6 @@
 import test from "ava";
 import Parser from "./index";
-import Token from "../Token";
+import Token from "../lexer/Token";
 import ASTree from "../ASTree";
 
 test("Parser simple literal: a", (t) => {
