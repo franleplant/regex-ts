@@ -23,9 +23,7 @@ export default function toDFA(automata: Automata): Automata {
     for (const symbol of symbols) {
       const nextState = lambdaClosure(automata, move(automata, state, symbol));
       const nextStateId = stateLedger.addState(nextState);
-      // TODO at the end make sure delta doesn't have repeated elements
-      // Or do we care? since it will be tranlsated into a map
-      // which wont care about duplicates
+      // the Automata will take care of removing duplicated rules
       delta.push([stateId, symbol, nextStateId]);
     }
   }

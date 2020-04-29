@@ -13,9 +13,11 @@ export default class Delta {
   constructor(delta: IDelta) {
     this.delta = delta;
 
+    // keep track of duplicated rules to remove them
+    const duplicatedRules: { [ruleIndex: number]: boolean } = {};
     // Perf optimization, we create a map
     // to make faster lookups for the next state
-    this.delta.forEach(([state, symbol, nextState]) => {
+    this.delta.forEach(([state, symbol, nextState], index) => {
       // Transform it into an array, this is
       // just an ergonomic enhancement
       const symbols = Array.isArray(symbol) ? symbol : [symbol];
@@ -26,10 +28,24 @@ export default class Delta {
         // We want to store a list of next states to make this
         // more generic to fit Non Deterministic Automata (NDA)
         const nextStateList = this.map.get(key) || [];
-        nextStateList.push(nextState);
+
+        // check if the rule is duplicated
+        if (nextStateList.includes(nextState)) {
+          // if it is, then mark it for later removal
+          duplicatedRules[index] = true;
+        } else {
+          // otherwise save it
+          nextStateList.push(nextState);
+          // and mark it as not duplicated
+          duplicatedRules[index] = false;
+        }
+
         this.map.set(key, nextStateList);
       });
     });
+
+    // Remove duplicated rules
+    this.delta = this.delta.filter((_value, index) => !duplicatedRules[index]);
   }
 
   // Get the first state in the next state list
