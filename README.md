@@ -4,7 +4,7 @@ This is a Toy RexExp engine written in Typescript as a learning
 and teaching exercise. It isn't meant to be feature complete and
 it is written in the _best_ and most _simplest_ way I could manage.
 
-Any improvements on that front and more than welcomed!
+Any improvements on that front are more than welcomed!
 
 ## Why a RegExp engine?
 
