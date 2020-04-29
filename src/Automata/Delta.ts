@@ -1,3 +1,4 @@
+import { TRAP_STATE } from "./Automata";
 import { IDelta, IState, ISymbol } from "./types";
 
 // This is the representation of the Delta
@@ -67,7 +68,7 @@ export default class Delta {
   // this method should only be used in NDA
   getNDA(state: IState, symbol: ISymbol): Array<IState> {
     const nextStateList = this.map.get(JSON.stringify({ state, symbol }));
-    return nextStateList || [];
+    return (nextStateList || []).filter((state) => state !== TRAP_STATE);
   }
 
   getArray(): IDelta {

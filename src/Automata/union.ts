@@ -15,7 +15,7 @@ export default function union(left: Automata, right: Automata): Automata {
   const [leftRenameMap, lastLeftState] = getRenameMap(leftStates, OFFSET);
 
   const rightStates = right.delta.getStates();
-  const [rightRenameMap] = getRenameMap(rightStates, lastLeftState);
+  const [rightRenameMap] = getRenameMap(rightStates, lastLeftState + 1);
 
   const delta = [
     // the union is a new automata that has lambda transitions

@@ -1,4 +1,8 @@
+import assert from "assert";
+import debugFactory from "debug";
 import { IState } from "../types";
+
+const debug = debugFactory("toDFA: StateLedger");
 
 // Non Deterministic Automata State
 export type NState = Set<IState>;
@@ -11,8 +15,23 @@ export default class StateLedger {
   markLedger: IMarkLedger = {};
   readonly states: Array<NState> = [];
 
-  constructor(states: Array<NState>) {
-    this.states = states;
+  constructor(initialState: NState) {
+    this.states.push(initialState);
+    this.markLedger[0] = false;
+    debug("constructor %o", this);
+  }
+
+  getStateId(state: NState): IState {
+    const stateId = this.states.findIndex((s) => isEqual(s, state));
+    if (stateId === -1) {
+      return this.states.length;
+    }
+
+    return stateId;
+  }
+
+  getStateIds(): Array<IState> {
+    return this.states.map((_val, stateId) => stateId);
   }
 
   allMarked(): boolean {
@@ -20,28 +39,32 @@ export default class StateLedger {
   }
 
   getFirstUnmarked(): [IState, NState] {
-    const entry = Object.entries(this.markLedger).find(
-      ([, isMarked]) => !isMarked
-    );
-    if (!entry) {
+    let unmarkedStateId: number = -1;
+    for (const stateId in this.markLedger) {
+      if (!this.markLedger[stateId]) {
+        unmarkedStateId = Number(stateId);
+      }
+    }
+
+    if (unmarkedStateId === -1) {
       throw new Error(`StateLedger.getFirstUnmarked error while getting it`);
     }
 
-    const [stateId] = (entry as unknown) as [IState, boolean];
-    return [stateId, this.states[stateId]];
-  }
-
-  getStateId(state: NState): IState {
-    const stateId = this.states.findIndex((s) => isEqual(s, state));
-    if (!stateId) {
-      return this.states.length;
-    }
-
-    return stateId;
+    const unmarked = [unmarkedStateId, this.states[unmarkedStateId]] as [
+      IState,
+      NState
+    ];
+    debug("getFirstUnmarked() => %o", unmarked);
+    return unmarked;
   }
 
   mark(stateId: IState) {
+    assert(
+      stateId >= 0,
+      `stateLedger.mark(${stateId}) of a negative stateId. Maybe you are trying to mark TRAP_STATE?`
+    );
     this.markLedger[stateId] = true;
+    debug("mark(%o). Ledger: %o", stateId, this.markLedger);
   }
 
   addState(state: NState): IState {
@@ -52,10 +75,6 @@ export default class StateLedger {
     }
 
     return stateId;
-  }
-
-  getStateIds(): Array<IState> {
-    return this.states.map((_val, stateId) => stateId);
   }
 
   calcFinals(oldFinals: Array<IState>): Array<IState> {

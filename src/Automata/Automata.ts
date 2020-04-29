@@ -1,5 +1,6 @@
 import { IDelta, IState, ISymbol } from "./types";
 import Delta from "./Delta";
+import toDFA from "./toDFA";
 
 export const INITIAL_STATE = 0;
 export const TRAP_STATE = -1;
@@ -76,5 +77,9 @@ export default class Automata {
 
   isNotAccepted() {
     return !this.isAccepted() && !this.isTrapped();
+  }
+
+  toDFA(): Automata {
+    return toDFA(this);
   }
 }

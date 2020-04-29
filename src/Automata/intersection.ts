@@ -16,7 +16,9 @@ export default function intersection(
   const [, lastLeftState] = getRenameMap(leftStates, 0);
 
   const rightStates = right.delta.getStates();
-  const [rightRenameMap] = getRenameMap(rightStates, lastLeftState);
+  // We offset the names of the right automata because there will be a new
+  // state in the middle
+  const [rightRenameMap] = getRenameMap(rightStates, lastLeftState + 1);
 
   const delta = [
     // the intersection is simply an automata

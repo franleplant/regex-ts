@@ -1,6 +1,9 @@
+import debugFactory from "debug";
 import Automata, { INITIAL_STATE, LAMBDA } from "../Automata";
 import { IDelta, IState, ISymbol } from "../types";
 import StateLedger, { NState } from "./StateLedger";
+
+const debug = debugFactory("toDFA");
 
 // NFA to DFA algorithm
 // ref: Compilers Principles, Tecniques and Tools (The Dragon Book). 2nd Edition. Page 153
@@ -8,24 +11,33 @@ import StateLedger, { NState } from "./StateLedger";
 // search.
 // ref: Introduction to Algorithms - Cormen et al. 3rd Edition. Page 613
 export default function toDFA(automata: Automata): Automata {
-  const symbols = automata.delta.getSymbols();
+  // Since lambdaClosure already takes care of lambda transitions, we do not
+  // care about them when calculating `move`
+  const symbols = automata.delta.getSymbols().filter((s) => s !== LAMBDA);
 
-  const stateLedger = new StateLedger([
-    lambdaClosure(automata, new Set([INITIAL_STATE])),
-  ]);
+  const stateLedger = new StateLedger(
+    lambdaClosure(automata, new Set([INITIAL_STATE]))
+  );
 
   const delta: IDelta = [];
 
   while (!stateLedger.allMarked()) {
+    debug("> start iteration. Delta: %o", delta);
+    debug("ledger %o", stateLedger.states);
     const [stateId, state] = stateLedger.getFirstUnmarked();
     stateLedger.mark(stateId);
 
     for (const symbol of symbols) {
       const nextState = lambdaClosure(automata, move(automata, state, symbol));
+      // Ignore empty state sets
+      if (nextState.size === 0) {
+        continue;
+      }
       const nextStateId = stateLedger.addState(nextState);
       // the Automata will take care of removing duplicated rules
       delta.push([stateId, symbol, nextStateId]);
     }
+    debug("< end iteration. Delta: %o", delta);
   }
 
   const finals = stateLedger.calcFinals(automata.finals);
@@ -49,6 +61,7 @@ function lambdaClosure(automata: Automata, stateSet: NState): NState {
     });
   }
 
+  debug("lambdaClosure(%o) => %o", stateSet, closure);
   return closure;
 }
 
@@ -59,6 +72,8 @@ function move(automata: Automata, stateSet: NState, symbol: ISymbol): NState {
       .getNDA(state, symbol)
       .forEach((nextState) => nextStateSet.add(nextState));
   });
+
+  debug("move(%o, %o) => %o", stateSet, symbol, nextStateSet);
   return nextStateSet;
 }
 

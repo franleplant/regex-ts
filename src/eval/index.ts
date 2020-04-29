@@ -37,7 +37,7 @@ export default function evalTree(tree: ASTree): Automata {
     const leftAutomata = evalTree(children[0] as ASTree);
     const rightAutomata = evalTree(children[0] as ASTree);
 
-    return intersection(leftAutomata, rightAutomata);
+    return intersection(leftAutomata, rightAutomata).toDFA();
   }
 
   if (kind === "UNION") {
@@ -47,7 +47,7 @@ export default function evalTree(tree: ASTree): Automata {
     const leftAutomata = evalTree(children[0] as ASTree);
     const rightAutomata = evalTree(children[0] as ASTree);
 
-    return union(leftAutomata, rightAutomata);
+    return union(leftAutomata, rightAutomata).toDFA();
   }
 
   if (kind === "STAR") {
@@ -55,7 +55,7 @@ export default function evalTree(tree: ASTree): Automata {
       children.length === 1,
       "STAR should not have more than one children"
     );
-    return star(evalTree(children[0] as ASTree));
+    return star(evalTree(children[0] as ASTree)).toDFA();
   }
 
   if (kind === "PLUS") {
@@ -63,7 +63,7 @@ export default function evalTree(tree: ASTree): Automata {
       children.length === 1,
       "PLUS should not have more than one children"
     );
-    return plus(evalTree(children[0] as ASTree));
+    return plus(evalTree(children[0] as ASTree)).toDFA();
   }
 
   throw new Error(`invalid ASTree ${JSON.stringify(tree, null, 2)}`);
