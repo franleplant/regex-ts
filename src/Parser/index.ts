@@ -70,7 +70,7 @@ export default class Parser {
     this.index = 0;
   }
 
-  parse(): ASTree | undefined {
+  parse(): ASTree {
     debug(`parse(): %o`, this.tokens);
     this.reset();
     const tree = this.S();
