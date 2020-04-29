@@ -1,5 +1,11 @@
 import { IDelta, IState, ISymbol } from "./types";
 
+// This is the representation of the Delta
+// or transitions for an Automata.
+// This delta is generic in the sense that can
+// serve DFA and NFA.
+// For now we only need the NFA for the `toDFA` algorithms.
+// We do not have an Automata that knows how to run in NFA mode.
 export default class Delta {
   private delta: IDelta;
   private map: Map<string, Array<IState>> = new Map();
@@ -32,6 +38,10 @@ export default class Delta {
 
     if (nextStateList.length === 0) {
       return -1;
+    }
+
+    if (nextStateList.length > 1) {
+      console.log(`delta.get(${state}, ${symbol}) of a NFA`, nextStateList);
     }
 
     return nextStateList[0];

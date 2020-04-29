@@ -19,7 +19,7 @@ test("eval `a`", (t) => {
   t.assert(!automata.eval("b"));
 });
 
-test.skip("eval `hello`", (t) => {
+test("eval `hello`", (t) => {
   const input = new ASTree({
     kind: "ROOT",
     children: [
