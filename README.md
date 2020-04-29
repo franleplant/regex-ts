@@ -2,6 +2,12 @@
 
 ## Dev notes
 
+- Debug the top level API (super interesting)
+
+```sh
+DEBUG="RegExp" DEBUG_DEPTH=10 yarn test:unit --verbose
+```
+
 - Debug the parser
 
 ```sh
