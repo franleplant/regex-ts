@@ -1,6 +1,9 @@
 import assert from "assert";
+import debugFactory from "debug";
 import ASTree from "../ASTree";
 import { Automata, union, intersection, star, plus } from "../Automata";
+
+const debug = debugFactory("evalTree");
 
 // This is a simple evalTreeuator function
 // that crawls the tree in a pre-order fashion
@@ -45,7 +48,9 @@ export default function evalTree(tree: ASTree): Automata {
     assert(!!children[1], "union: right hand side is missing");
 
     const leftAutomata = evalTree(children[0] as ASTree);
-    const rightAutomata = evalTree(children[0] as ASTree);
+    const rightAutomata = evalTree(children[1] as ASTree);
+    debug("union left %o", leftAutomata);
+    debug("union right %o", rightAutomata);
 
     return union(leftAutomata, rightAutomata).toDFA();
   }

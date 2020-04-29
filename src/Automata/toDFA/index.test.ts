@@ -75,8 +75,8 @@ test("toDFA star", (t) => {
   ] as IDelta;
   const expectedFinals = [0, 1];
 
-  console.log("dfa delta", dfa.delta.getArray());
-  console.log("dfa finals", dfa.finals);
+  //console.log("dfa delta", dfa.delta.getArray());
+  //console.log("dfa finals", dfa.finals);
 
   t.deepEqual(dfa.delta.getArray(), expectedDelta);
   t.deepEqual(dfa.finals, expectedFinals);

@@ -36,7 +36,7 @@ test("eval `hello`", (t) => {
   t.assert(!automata.eval("b"));
 });
 
-test.skip("eval star", (t) => {
+test("eval star", (t) => {
   const input = new ASTree({
     kind: "ROOT",
     children: [
@@ -54,15 +54,13 @@ test.skip("eval star", (t) => {
 
   const automata = evalTree(input);
 
-  console.log(automata.delta);
-
   t.assert(automata.eval(""));
   t.assert(automata.eval("a"));
   t.assert(automata.eval("aa"));
   t.assert(automata.eval("aaa"));
 });
 
-test.skip("eval `hello*`", (t) => {
+test("eval `hello*`", (t) => {
   const input = new ASTree({
     kind: "ROOT",
     children: [
@@ -86,7 +84,7 @@ test.skip("eval `hello*`", (t) => {
   t.assert(automata.eval("hellohellohello"));
 });
 
-test.skip("eval `a|b`", (t) => {
+test("eval a|b", (t) => {
   const input = new ASTree({
     kind: "ROOT",
     children: [
