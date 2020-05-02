@@ -5,6 +5,7 @@ export const ALPHABET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".s
 );
 
 export const NUMBERS = "0123456789".split("");
+export const SYMBOLS = ".://".split("");
 
 export const ParOpen = Automata.singleSymbol("(");
 export const ParClose = Automata.singleSymbol(")");
@@ -15,9 +16,8 @@ export const Or = Automata.singleSymbol("|", "OR");
 export const Literal = new Automata(
   [
     [0, ALPHABET, 1],
-    [1, ALPHABET, 1],
     [0, NUMBERS, 1],
-    [1, NUMBERS, 1],
+    [0, SYMBOLS, 1],
   ],
   [1],
   "LITERAL"

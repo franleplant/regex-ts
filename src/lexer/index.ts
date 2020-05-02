@@ -1,6 +1,9 @@
+import debugFactory from "debug";
 import { Automata } from "../Automata";
 import Token, { TokenKind } from "./Token";
 import { ParOpen, ParClose, Star, Plus, Or, Literal } from "./validTokens";
+
+const debug = debugFactory("lexer");
 
 // The order is important!
 const automatas: Array<Automata> = [ParOpen, ParClose, Star, Plus, Or, Literal];
@@ -32,16 +35,19 @@ export default function lex(rawInput: string): Array<Token> {
       const char = input[index];
       const next = ingestChar(automatas, char);
 
-      //console.log("next", next, index, char)
       if (next.allTrapped) {
+        debug("allTrapped");
         break;
       }
 
+      debug("next %o", next);
       // Prepare to the next iteration
       candidates = next.candidates;
       lexeme += char;
       index += 1;
+      debug("lexeme %o", lexeme);
     }
+    debug("found longest token of types %o", candidates);
 
     // If we got here it means that we found the longest
     // string that is a valid token or we found an error
@@ -70,6 +76,7 @@ function ingestChar(
   automatas: Array<Automata>,
   char: string
 ): { candidates: Array<TokenKind>; allTrapped: boolean } {
+  debug("ingestChar %o", char);
   let allTrapped = true;
   const candidates: Array<TokenKind> = [];
   automatas.forEach((automata) => {

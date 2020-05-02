@@ -18,7 +18,7 @@ Any improvements on that front are more than welcomed!
 - Debug the top level API (check the whole compilation pipeline)
 
 ```sh
-DEBUG="RegExp" DEBUG_DEPTH=10 yarn test:unit --verbose
+DEBUG="RegExp*" DEBUG_DEPTH=10 yarn test:unit --verbose
 ```
 
 - Debug the parser

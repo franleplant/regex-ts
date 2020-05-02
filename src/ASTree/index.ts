@@ -1,3 +1,7 @@
+import debugFactory from "debug";
+
+const debug = debugFactory("ASTree");
+
 export type NodeKind =
   | "ROOT"
   | "UNION"
@@ -6,6 +10,10 @@ export type NodeKind =
   | "LITERAL"
   | "PLUS"
   | "STAR";
+
+export interface IOptions {
+  avoidSimplification: boolean;
+}
 
 //TODO add more tests
 export default class ASTree {
@@ -17,25 +25,32 @@ export default class ASTree {
   lexeme?: string;
   children?: Array<ASTree | undefined>;
 
-  constructor({
-    kind,
-    lexeme,
-    children,
-  }: {
-    kind: NodeKind;
-    lexeme?: string;
-    children?: Array<ASTree | undefined>;
-  }) {
+  constructor(
+    {
+      kind,
+      lexeme,
+      children,
+    }: {
+      kind: NodeKind;
+      lexeme?: string;
+      children?: Array<ASTree | undefined>;
+    },
+    options: Partial<IOptions> = {}
+  ) {
     this.kind = kind;
     this.lexeme = lexeme;
     this.children = children;
 
-    this.simplifyEmpty();
-    this.simplifyLambda();
-    this.simplifyStar();
-    this.simplifyPlus();
-    this.simplifyIntersection();
-    this.simplifyUnion();
+    if (!options.avoidSimplification) {
+      debug("applying simplification");
+      this.simplifyEmpty();
+      this.simplifyLambda();
+      //this.simplifyStar();
+      //this.simplifyPlus();
+      this.simplifyIntersection();
+      this.simplifyIntersection2();
+      //this.simplifyUnion();
+    }
   }
 
   isLambda(): boolean {
@@ -57,13 +72,49 @@ export default class ASTree {
   }
 
   simplifyIntersection() {
+    if (this.kind !== "INTERSECTION") {
+      return;
+    }
+
     if (!this.children) {
       return;
     }
 
+    if (this.children.length === 1) {
+      const singleChild = this.children[0];
+      if (!singleChild) {
+        throw new Error(`simplifyIntersection wrong single child`);
+      }
+      this.kind = singleChild.kind;
+      this.lexeme = singleChild.lexeme;
+      this.children = singleChild.children;
+    }
+  }
+
+  simplifyIntersection2() {
     if (this.kind !== "INTERSECTION") {
       return;
     }
+
+    if (!this.children) {
+      return;
+    }
+
+    const [leftTree, rightTree] = this.children;
+    if (!leftTree || !rightTree) {
+      return;
+    }
+
+    if (rightTree.kind !== "INTERSECTION") {
+      return;
+    }
+
+    if (!rightTree.children || rightTree.children.length < 2) {
+      debug("simplifyIntersection2() found a weird rightTree %o", rightTree);
+      return;
+    }
+
+    this.children = [leftTree, ...rightTree.children];
 
     if (this.children.length === 1) {
       const singleChild = this.children[0];
@@ -81,53 +132,64 @@ export default class ASTree {
       return;
     }
 
-    const union = this.children[1];
-    if (union?.kind !== "UNION") {
+    const unionIndex = this.children.findIndex(
+      (child) => (child as ASTree).kind === "UNION"
+    );
+    const union = this.children[unionIndex];
+    if (!union) {
       return;
     }
-
-    const unionLeft = this.children[0];
-    if (!unionLeft) {
-      throw new Error(`simplifyUnion wrong left hand side`);
-    }
-
-    const unionRight = union.children;
-    if (!unionRight) {
+    debug("simplifyUnion() found union at %o %o", unionIndex, union);
+    if (!union.children) {
       throw new Error(`simplifyUnion wrong right hand side`);
     }
 
-    this.kind = "UNION";
+    const leftChildren = this.children.slice(0, unionIndex);
+    if (leftChildren.length === 0) {
+      throw new Error(`simplifyUnion wrong left hand side`);
+    }
+
     this.children = [
-      unionLeft,
-      // TODO do we really want all of them?
-      ...unionRight,
+      new ASTree({
+        kind: this.kind,
+        children: leftChildren,
+      }),
+      ...union.children,
     ];
+    this.kind = "UNION";
   }
 
   simplifyStar() {
+    debug("simplifyStar()");
     if (!this.children) {
+      debug("simplifyStar() empty children");
       return;
     }
 
+    debug("simplifyStar() this.children => %O", this.children);
     const starredTree = this.children[0];
     if (!starredTree) {
+      debug("simplifyStar() empty first children");
       return;
     }
 
     const star = this.children[1];
     if (star?.kind !== "STAR") {
+      debug("simplifyStar() second children not a STAR. Skipping");
       return;
     }
 
-    const next = star.children || [];
+    const rightTree = star.children || [];
 
     const newChildren = [
       new ASTree({
         kind: "STAR",
         children: [starredTree],
       }),
-      ...next,
+      ...rightTree,
     ];
+
+    debug("simplifyStar() new children %O", newChildren);
 
     this.children = newChildren;
   }
@@ -160,82 +222,3 @@ export default class ASTree {
     this.children = newChildren;
   }
 }
-
-//Got from this
-//{
-//"kind": "S",
-//"children": [
-//{
-//"kind": "LITERAL",
-//"lexeme": "a"
-//},
-//{
-//"kind": "OR_first_children",
-//"children": [
-//{
-//"kind": "S",
-//"children": [
-//{
-//"kind": "LITERAL",
-//"lexeme": "b"
-//},
-//{
-//"kind": "LITERAL",
-//"lexeme": "abc"
-//}
-//]
-//},
-//{
-//"kind": "lambda"
-//}
-//]
-//}
-//]
-//}
-
-//to this:
-
-//{
-//"kind": "S",
-//"children": [
-//{
-//"kind": "UNION",
-//children: [
-//{
-//"kind": "LITERAL",
-//"lexeme": "a"
-//},
-//{
-//"kind": "LITERAL",
-//"lexeme": "b"
-//},
-//]
-//},
-//subTree
-//]
-//}
-
-// STAR
-//RESULT {
-//"kind": "ROOT",
-//"children": [
-//{
-//"kind": "INTERSECTION",
-//"children": [
-//{
-//"kind": "LITERAL",
-//"lexeme": "a"
-//},
-//{
-//"kind": "STAR",
-//"children": [
-//{
-//"kind": "LITERAL",
-//"lexeme": "b"
-//}
-//]
-//}
-//]
-//}
-//]
-//}
