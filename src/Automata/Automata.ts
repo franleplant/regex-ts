@@ -1,6 +1,7 @@
 import { IDelta, IState, ISymbol } from "./types";
 import Delta from "./Delta";
 import toDFA from "./toDFA";
+import toMin from "./toMin";
 
 export const INITIAL_STATE = 0;
 export const TRAP_STATE = -1;
@@ -81,5 +82,9 @@ export default class Automata {
 
   toDFA(): Automata {
     return toDFA(this);
+  }
+
+  toMin(): Automata {
+    return toMin(this);
   }
 }
