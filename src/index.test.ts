@@ -19,7 +19,35 @@ test("RegExp basic case3 b*", (t) => {
   const re = new RegExp("b*");
   t.assert(re.test(""));
   t.assert(re.test("b"));
-  t.assert(re.test("bbbb"));
+  t.assert(re.test("bb"));
+  t.assert(re.test("bbbbbbbb"));
+  t.assert(!re.test("hola"));
+});
+
+test("RegExp basic case4 ab*c", (t) => {
+  const re = new RegExp("ab*c");
+  t.assert(re.test("ac"));
+  t.assert(re.test("abc"));
+  t.assert(re.test("abbc"));
+  t.assert(re.test("abbbbbbbbc"));
+  t.assert(!re.test("hola"));
+});
+
+test("RegExp basic case5 ab*", (t) => {
+  const re = new RegExp("ab*");
+  t.assert(re.test("a"));
+  t.assert(re.test("ab"));
+  t.assert(re.test("abb"));
+  t.assert(re.test("abbbbbbbb"));
+  t.assert(!re.test("hola"));
+});
+
+test("RegExp basic case6 b*c", (t) => {
+  const re = new RegExp("b*c");
+  t.assert(re.test("c"));
+  t.assert(re.test("bc"));
+  t.assert(re.test("bbc"));
+  t.assert(re.test("bbbbbbbbc"));
   t.assert(!re.test("hola"));
 });
 

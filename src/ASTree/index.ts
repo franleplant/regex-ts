@@ -11,6 +11,10 @@ export type NodeKind =
   | "PLUS"
   | "STAR";
 
+export interface IAttributes {
+  done?: boolean;
+}
+
 export default class ASTree {
   static readonly Lambda: ASTree = new ASTree({
     kind: "LAMBDA",
@@ -19,19 +23,23 @@ export default class ASTree {
   kind: NodeKind;
   lexeme?: string;
   children?: Array<ASTree | undefined>;
+  attributes: IAttributes;
 
   constructor({
     kind,
     lexeme,
     children,
+    attributes = {},
   }: {
     kind: NodeKind;
     lexeme?: string;
     children?: Array<ASTree | undefined>;
+    attributes?: IAttributes;
   }) {
     this.kind = kind;
     this.lexeme = lexeme;
     this.children = children;
+    this.attributes = attributes;
   }
 
   childrenLength(): number {
@@ -54,7 +62,23 @@ export default class ASTree {
     return this.kind === "UNION";
   }
 
-  popChildIf(predicate: Predicate): ASTree | undefined {
+  isStar(): boolean {
+    return this.kind === "STAR";
+  }
+
+  getAttr<K extends keyof IAttributes>(key: K): IAttributes[K] {
+    return this.attributes[key];
+  }
+
+  popChild(): ASTree | undefined {
+    if (!this.children || this.children.length === 0) {
+      return;
+    }
+
+    return this.children.pop();
+  }
+
+  popChildIf(shouldPop: Predicate): ASTree | undefined {
     if (!this.children || this.children.length === 0) {
       return;
     }
@@ -64,13 +88,10 @@ export default class ASTree {
       return;
     }
 
-    const shouldPop = predicate(lastChild);
-    if (!shouldPop) {
-      return;
+    if (shouldPop(lastChild)) {
+      return this.children.pop();
     }
-
-    this.children.pop();
-    return lastChild;
+    return;
   }
 
   getChild(index: number): ASTree | undefined {

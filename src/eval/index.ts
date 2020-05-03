@@ -34,8 +34,6 @@ export default function evalTree(tree: ASTree): Automata {
   }
 
   if (kind === "INTERSECTION") {
-    assert(children.length >= 2, "INTERSECTION: bad ast");
-
     const result = children.reduce(
       (acu, child) => intersection(acu, evalTree(child as ASTree)),
       Automata.empty()

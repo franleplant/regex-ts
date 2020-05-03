@@ -13,12 +13,11 @@ export default function toAST(tree: ASTree): ASTree {
 
   if (tree.kind === "INTERSECTION") {
     // TODO break this down,
-    //TODO create abstractions in ASTree to improve the api
-    // of checking children length, children kinds etc etc
+    //TODO probably I do not need to check this length now that
+    // im using safer wrappers
     if (tree.children.length >= 2) {
       console.log(
-        "intersection(lit_1, ..., lit_n, intersection(any, lamda)) => intersection(lit_1, ..., lit_n, any)",
-        JSON.stringify(tree)
+        "intersection(lit_1, ..., lit_n, intersection(any, lamda)) => intersection(lit_1, ..., lit_n, any)"
       );
 
       const intersection = tree.popChildIf(
@@ -64,6 +63,38 @@ export default function toAST(tree: ASTree): ASTree {
             children: [tree, union.getChild(0)],
           })
         );
+      }
+      console.log("skipping");
+    }
+
+    if (tree.children.length >= 2) {
+      console.log(
+        "intersection(lit_1, ..., lit_n-1, lit_n, star(next)) => intersection(lit_1, ..., lit_n-1, star(lit_n), next)"
+      );
+      const star = tree.popChildIf(
+        (child) => child.isStar() && !child.getAttr("done")
+      );
+      if (star) {
+        const lastChild = tree.popChild();
+        if (!lastChild) {
+          throw new Error(
+            `star: incorrect tree ${JSON.stringify(tree, null, 2)}`
+          );
+        }
+
+        tree.children = [
+          ...tree.children,
+          new ASTree({
+            kind: "STAR",
+            children: [lastChild],
+            attributes: {
+              done: true,
+            },
+          }),
+          ...(star.children || []).filter((child) => !child?.isLambda()),
+        ];
+
+        return toAST(tree);
       }
       console.log("skipping");
     }
