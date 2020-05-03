@@ -93,6 +93,8 @@ test("Parser Union: a|b", (t) => {
     ],
   });
 
+  console.log("tree", JSON.stringify(tree, null, 2));
+
   t.deepEqual(tree, expected);
 });
 
@@ -232,7 +234,7 @@ test("Parser Union: (a|b)abc", (t) => {
   t.deepEqual(tree, expected);
 });
 
-test("Parser Star: a*b", (t) => {
+test("Parser Star case1 a*b", (t) => {
   const parser = new Parser([
     new Token("LITERAL", "a"),
     new Token("STAR", ""),
@@ -264,6 +266,8 @@ test("Parser Star: a*b", (t) => {
       }),
     ],
   });
+
+  console.log("tree", JSON.stringify(tree, null, 2));
 
   t.deepEqual(tree, expected);
 });

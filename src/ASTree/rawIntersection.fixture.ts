@@ -1,42 +1,22 @@
 import ASTree from "../ASTree";
 
 export function case1() {
-  return new ASTree(
-    {
-      kind: "INTERSECTION",
-      children: [
-        new ASTree(
-          { kind: "LITERAL", lexeme: "a" },
-          { avoidSimplification: true }
-        ),
-        new ASTree(
-          {
-            kind: "INTERSECTION",
-            children: [
-              new ASTree(
-                { kind: "LITERAL", lexeme: "b" },
-                { avoidSimplification: true }
-              ),
-              new ASTree(
-                {
-                  kind: "UNION",
-                  children: [
-                    new ASTree(
-                      { kind: "LITERAL", lexeme: "c" },
-                      { avoidSimplification: true }
-                    ),
-                  ],
-                },
-                { avoidSimplification: true }
-              ),
-            ],
-          },
-          { avoidSimplification: true }
-        ),
-      ],
-    },
-    { avoidSimplification: true }
-  );
+  return new ASTree({
+    kind: "INTERSECTION",
+    children: [
+      new ASTree({ kind: "LITERAL", lexeme: "a" }),
+      new ASTree({
+        kind: "INTERSECTION",
+        children: [
+          new ASTree({ kind: "LITERAL", lexeme: "b" }),
+          new ASTree({
+            kind: "UNION",
+            children: [new ASTree({ kind: "LITERAL", lexeme: "c" })],
+          }),
+        ],
+      }),
+    ],
+  });
 }
 
 export function case2() {

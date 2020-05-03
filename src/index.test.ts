@@ -1,6 +1,28 @@
 import test from "ava";
 import RegExp from "./index";
 
+test("RegExp basic case1 ab|cd", (t) => {
+  const re = new RegExp("ab|cd");
+  t.assert(re.test("ab"));
+  t.assert(re.test("cd"));
+  t.assert(!re.test("hola"));
+});
+
+test("RegExp basic case2 abx|cd", (t) => {
+  const re = new RegExp("abx|cd");
+  t.assert(re.test("abx"));
+  t.assert(re.test("cd"));
+  t.assert(!re.test("hola"));
+});
+
+test("RegExp basic case3 b*", (t) => {
+  const re = new RegExp("b*");
+  t.assert(re.test(""));
+  t.assert(re.test("b"));
+  t.assert(re.test("bbbb"));
+  t.assert(!re.test("hola"));
+});
+
 test("RegExp case1 hello|bye", (t) => {
   const re = new RegExp("hello|bye");
   t.assert(re.test("hello"));
@@ -8,7 +30,15 @@ test("RegExp case1 hello|bye", (t) => {
   t.assert(!re.test("hola"));
 });
 
-test("RegExp case2", (t) => {
+test("RegExp case3 ab*", (t) => {
+  const re = new RegExp("ab*");
+  t.assert(re.test("a"));
+  t.assert(re.test("ab"));
+  t.assert(re.test("abbbb"));
+  t.assert(!re.test("hola"));
+});
+
+test("RegExp case-not", (t) => {
   const re = new RegExp("(a|b)*");
   t.assert(re.test(""));
   t.assert(re.test("a"));
