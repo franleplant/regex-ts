@@ -16,7 +16,7 @@ export default function toAST(tree: ASTree): ASTree {
 
   const heuristics: Array<Heuristic> = [
     intersectionOfLambda,
-    trivialIntersection,
+    intersectionOftrivialIntersection,
     intersectionOfNestedLambda,
     intersectionOfNestedTerminal,
     intersectionOfUnion,
@@ -55,7 +55,7 @@ export const intersectionOfLambda: Heuristic = (tree) => {
   return;
 };
 
-export const trivialIntersection: Heuristic = (tree) => {
+export const intersectionOftrivialIntersection: Heuristic = (tree) => {
   debug("intersection(intersection(any)) => intersection(any)");
   if (tree.isIntersection() && tree.childrenLength() === 1) {
     const intersection = tree.popChildIf((child) => child.isIntersection());
