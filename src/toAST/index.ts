@@ -12,31 +12,22 @@ export default function toAST(tree: ASTree): ASTree {
     return tree;
   }
 
-  let newTree;
+  const heuristics: Array<Heuristic> = [
+    lambdaIntersection,
+    trivialIntersection,
+    nestedLambdaIntersection,
+    nestedTerminalIntersection,
+    intersectionOfUnion,
+    intersectionOfStar,
+  ];
+
   // try the heuristic and if it does return a new tree
   // then we return that, otherwise let's keep trying other heuristics
-  if ((newTree = lambdaIntersection(tree))) {
-    return newTree;
-  }
-
-  if ((newTree = trivialIntersection(tree))) {
-    return newTree;
-  }
-
-  if ((newTree = nestedLambdaIntersection(tree))) {
-    return newTree;
-  }
-
-  if ((newTree = nestedTerminalIntersection(tree))) {
-    return newTree;
-  }
-
-  if ((newTree = intersectionOfUnion(tree))) {
-    return newTree;
-  }
-
-  if ((newTree = intersectionOfStar(tree))) {
-    return newTree;
+  for (const heuristic of heuristics) {
+    const newTree = heuristic(tree);
+    if (newTree) {
+      return newTree;
+    }
   }
 
   if (tree.isUnion()) {
