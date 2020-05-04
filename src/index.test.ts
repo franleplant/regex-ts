@@ -1,21 +1,21 @@
 import test from "ava";
 import RegExp from "./index";
 
-test("RegExp basic case1 ab|cd", (t) => {
+test("RegExp basic case01 ab|cd", (t) => {
   const re = new RegExp("ab|cd");
   t.assert(re.test("ab"));
   t.assert(re.test("cd"));
   t.assert(!re.test("hola"));
 });
 
-test("RegExp basic case2 abx|cd", (t) => {
+test("RegExp basic case02 abx|cd", (t) => {
   const re = new RegExp("abx|cd");
   t.assert(re.test("abx"));
   t.assert(re.test("cd"));
   t.assert(!re.test("hola"));
 });
 
-test("RegExp basic case3 b*", (t) => {
+test("RegExp basic case03 b*", (t) => {
   const re = new RegExp("b*");
   t.assert(re.test(""));
   t.assert(re.test("b"));
@@ -24,7 +24,7 @@ test("RegExp basic case3 b*", (t) => {
   t.assert(!re.test("hola"));
 });
 
-test("RegExp basic case4 ab*c", (t) => {
+test("RegExp basic case04 ab*c", (t) => {
   const re = new RegExp("ab*c");
   t.assert(re.test("ac"));
   t.assert(re.test("abc"));
@@ -33,7 +33,7 @@ test("RegExp basic case4 ab*c", (t) => {
   t.assert(!re.test("hola"));
 });
 
-test("RegExp basic case5 ab*", (t) => {
+test("RegExp basic case05 ab*", (t) => {
   const re = new RegExp("ab*");
   t.assert(re.test("a"));
   t.assert(re.test("ab"));
@@ -42,7 +42,7 @@ test("RegExp basic case5 ab*", (t) => {
   t.assert(!re.test("hola"));
 });
 
-test("RegExp basic case6 b*c", (t) => {
+test("RegExp basic case06 b*c", (t) => {
   const re = new RegExp("b*c");
   t.assert(re.test("c"));
   t.assert(re.test("bc"));
@@ -51,35 +51,57 @@ test("RegExp basic case6 b*c", (t) => {
   t.assert(!re.test("hola"));
 });
 
-test("RegExp basic case7 (ab)c", (t) => {
+test("RegExp basic case07 (ab)c", (t) => {
   const re = new RegExp("(ab)c");
   t.assert(re.test("abc"));
   t.assert(!re.test("hola"));
 });
 
-test("RegExp basic case8 (ab)c|(de)", (t) => {
+test("RegExp basic case08 (ab)c|(de)", (t) => {
   const re = new RegExp("(ab)c|(de)");
   t.assert(re.test("abc"));
   t.assert(re.test("de"));
   t.assert(!re.test("hola"));
 });
 
-test("RegExp case1 hello|bye", (t) => {
-  const re = new RegExp("hello|bye");
-  t.assert(re.test("hello"));
-  t.assert(re.test("bye"));
-  t.assert(!re.test("hola"));
-});
-
-test("RegExp case3 ab*", (t) => {
-  const re = new RegExp("ab*");
-  t.assert(re.test("a"));
+test("RegExp basic case09 (ab)*", (t) => {
+  const re = new RegExp("(ab)*");
+  t.assert(re.test(""));
   t.assert(re.test("ab"));
-  t.assert(re.test("abbbb"));
+  t.assert(re.test("abab"));
+  t.assert(re.test("abababababab"));
   t.assert(!re.test("hola"));
 });
 
-test("RegExp case-not", (t) => {
+test("RegExp basic case10 (ab)*c", (t) => {
+  const re = new RegExp("(ab)*c");
+  t.assert(re.test("c"));
+  t.assert(re.test("abc"));
+  t.assert(re.test("ababc"));
+  t.assert(re.test("abababababababc"));
+  t.assert(!re.test("hola"));
+});
+
+test("RegExp basic case11 (ab)*|cd", (t) => {
+  const re = new RegExp("(ab)*|cd");
+  t.assert(re.test(""));
+  t.assert(re.test("ab"));
+  t.assert(re.test("cd"));
+  t.assert(re.test("ababababab"));
+  t.assert(!re.test("hola"));
+});
+
+test("RegExp basic case12 ((ab)*|cd)*", (t) => {
+  const re = new RegExp("((ab)*|cd)*");
+  t.assert(re.test(""));
+  t.assert(re.test("ab"));
+  t.assert(re.test("cd"));
+  t.assert(re.test("cdababcdababab"));
+  t.assert(re.test("abcdababcdababab"));
+  t.assert(!re.test("hola"));
+});
+
+test("RegExp basic case13 (a|b)*", (t) => {
   const re = new RegExp("(a|b)*");
   t.assert(re.test(""));
   t.assert(re.test("a"));
@@ -90,6 +112,13 @@ test("RegExp case-not", (t) => {
   t.assert(re.test("bbbbbb"));
   t.assert(re.test("ababaaaaab"));
   t.assert(re.test("babaaaab"));
+  t.assert(!re.test("hola"));
+});
+
+test("RegExp case1 hello|bye", (t) => {
+  const re = new RegExp("hello|bye");
+  t.assert(re.test("hello"));
+  t.assert(re.test("bye"));
   t.assert(!re.test("hola"));
 });
 
@@ -114,18 +143,9 @@ test("RegExp https", (t) => {
   t.assert(!re.test("hola"));
 });
 
-test("RegExp baSTAR", (t) => {
-  const re = new RegExp("ba*");
-  t.assert(re.test("b"));
-  t.assert(re.test("ba"));
-  t.assert(re.test("baaaaaa"));
+test("RegExp https://a+.com", (t) => {
+  const re = new RegExp("(http|https)://aa*.com");
+  t.assert(re.test("http://aaaaaa.com"));
+  t.assert(re.test("https://aaaaa.com"));
   t.assert(!re.test("hola"));
-  t.assert(!re.test("baba"));
 });
-
-//test("RegExp https://a+.com", (t) => {
-//const re = new RegExp("(http|https)://aa*.com");
-//t.assert(re.test("http://aaaaaa.com"));
-//t.assert(re.test("https://aaaaa.com"));
-//t.assert(!re.test("hola"));
-//});
