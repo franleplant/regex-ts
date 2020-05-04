@@ -35,17 +35,19 @@ export default class ASTree {
     lexeme,
     children,
     attributes = {},
+    id = globalId++,
   }: {
     kind: NodeKind;
     lexeme?: string;
     children?: Array<ASTree | undefined>;
     attributes?: IAttributes;
+    id?: number;
   }) {
     this.kind = kind;
     this.lexeme = lexeme;
     this.children = children;
     this.attributes = attributes;
-    this.id = globalId++;
+    this.id = id;
   }
 
   childrenLength(): number {
