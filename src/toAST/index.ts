@@ -3,6 +3,8 @@ import ASTree from "../ASTree";
 
 const debug = debugFactory("toAST");
 
+export type Heuristic = (tree: ASTree) => ASTree | undefined;
+
 // An heuristic approach to turn the parse tree into
 // an AST that can be easily evaluated via a pre-order
 // tree traversal
@@ -13,10 +15,10 @@ export default function toAST(tree: ASTree): ASTree {
   }
 
   const heuristics: Array<Heuristic> = [
-    lambdaIntersection,
+    intersectionOfLambda,
     trivialIntersection,
-    nestedLambdaIntersection,
-    nestedTerminalIntersection,
+    intersectionOfNestedLambda,
+    intersectionOfNestedTerminal,
     intersectionOfUnion,
     intersectionOfStar,
   ];
@@ -41,9 +43,7 @@ export default function toAST(tree: ASTree): ASTree {
   return tree;
 }
 
-type Heuristic = (tree: ASTree) => ASTree | undefined;
-
-export const lambdaIntersection: Heuristic = (tree) => {
+export const intersectionOfLambda: Heuristic = (tree) => {
   debug("intersection(...any, lambda) => intersection(...any)");
   if (tree.isIntersection() && tree.childrenLength() >= 2) {
     const lambda = tree.popChildIf((child) => child.isLambda());
@@ -68,7 +68,7 @@ export const trivialIntersection: Heuristic = (tree) => {
   return;
 };
 
-export const nestedLambdaIntersection: Heuristic = (tree) => {
+export const intersectionOfNestedLambda: Heuristic = (tree) => {
   debug(
     "intersection(lit_1, ..., lit_n, intersection(any, lamda)) => intersection(lit_1, ..., lit_n, any)"
   );
@@ -87,7 +87,7 @@ export const nestedLambdaIntersection: Heuristic = (tree) => {
   return;
 };
 
-export const nestedTerminalIntersection: Heuristic = (tree) => {
+export const intersectionOfNestedTerminal: Heuristic = (tree) => {
   debug(
     "intersection(lit_1, ..., lit_n, intersection(lit_n+1, any)) => intersection(lit_1, ..., lit_n, lit_n+1, any)"
   );
