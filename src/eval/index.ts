@@ -19,6 +19,10 @@ export default function evalTree(tree: ASTree): Automata {
     return Automata.word(lexeme as string);
   }
 
+  if (tree.isLambda()) {
+    return Automata.empty();
+  }
+
   if (!children) {
     throw new Error(
       `Invalid ASTree: No children ${JSON.stringify(tree, null, 2)}`

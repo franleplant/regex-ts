@@ -51,6 +51,19 @@ test("RegExp basic case6 b*c", (t) => {
   t.assert(!re.test("hola"));
 });
 
+test("RegExp basic case7 (ab)c", (t) => {
+  const re = new RegExp("(ab)c");
+  t.assert(re.test("abc"));
+  t.assert(!re.test("hola"));
+});
+
+test("RegExp basic case8 (ab)c|(de)", (t) => {
+  const re = new RegExp("(ab)c|(de)");
+  t.assert(re.test("abc"));
+  t.assert(re.test("de"));
+  t.assert(!re.test("hola"));
+});
+
 test("RegExp case1 hello|bye", (t) => {
   const re = new RegExp("hello|bye");
   t.assert(re.test("hello"));

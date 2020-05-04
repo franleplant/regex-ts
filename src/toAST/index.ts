@@ -1,7 +1,10 @@
+import debugFactory from "debug";
 import ASTree from "../ASTree";
 
+const debug = debugFactory("toAST");
+
 export default function toAST(tree: ASTree): ASTree {
-  console.log("toAST. input", JSON.stringify(tree));
+  debug("input %O", tree);
   if (!tree.children || tree.children.length === 0) {
     return tree;
   }
@@ -11,12 +14,33 @@ export default function toAST(tree: ASTree): ASTree {
   //return tree
   //}
 
-  if (tree.kind === "INTERSECTION") {
+  if (tree.isIntersection()) {
     // TODO break this down,
     //TODO probably I do not need to check this length now that
     // im using safer wrappers
     if (tree.children.length >= 2) {
-      console.log(
+      debug("intersection(...any, lambda) => intersection(...any)");
+
+      const lambda = tree.popChildIf((child) => child.isLambda());
+      if (lambda) {
+        return toAST(tree);
+      }
+
+      debug("skipping");
+    }
+
+    if (tree.childrenLength() === 1) {
+      debug("intersection(intersection(any)) => intersection(any)");
+      const intersection = tree.popChildIf((child) => child.isIntersection());
+      if (intersection) {
+        tree.children = intersection.children;
+        return toAST(tree);
+      }
+      debug("skipping");
+    }
+
+    if (tree.children.length >= 2) {
+      debug(
         "intersection(lit_1, ..., lit_n, intersection(any, lamda)) => intersection(lit_1, ..., lit_n, any)"
       );
 
@@ -30,11 +54,11 @@ export default function toAST(tree: ASTree): ASTree {
         return toAST(tree);
       }
 
-      console.log("skipping");
+      debug("skipping");
     }
 
     if (tree.children.length >= 2) {
-      console.log(
+      debug(
         "intersection(lit_1, ..., lit_n, intersection(lit_n+1, any)) => intersection(lit_1, ..., lit_n, lit_n+1, any)"
       );
 
@@ -49,11 +73,11 @@ export default function toAST(tree: ASTree): ASTree {
         ];
         return toAST(tree);
       }
-      console.log("skipping");
+      debug("skipping");
     }
 
     if (tree.children.length >= 2) {
-      console.log("intersection(...children, union(any))");
+      debug("intersection(...children, union(any))");
       // Should be the last
       const union = tree.popChildIf((child) => child.isUnion());
       if (union) {
@@ -64,11 +88,11 @@ export default function toAST(tree: ASTree): ASTree {
           })
         );
       }
-      console.log("skipping");
+      debug("skipping");
     }
 
     if (tree.children.length >= 2) {
-      console.log(
+      debug(
         "intersection(lit_1, ..., lit_n-1, lit_n, star(next)) => intersection(lit_1, ..., lit_n-1, star(lit_n), next)"
       );
       const star = tree.popChildIf(
@@ -96,8 +120,26 @@ export default function toAST(tree: ASTree): ASTree {
 
         return toAST(tree);
       }
-      console.log("skipping");
+      debug("skipping");
     }
+
+    //if (tree.children.length >= 2) {
+    //debug("intersection(intersection(terminals), terminal) => intersection(terminals, terminal)")
+    //const left = tree.getChildIf(0, child => child.isIntersection() && child.allChildrenAreTerminals())
+    //if (left) {
+    //const right = tree.popChildIf(child => child.isTerminal())
+    //if (right) {
+    //debug("left %O", left)
+    //debug("right %O", right)
+    //tree.children = [
+    //...(left.children as Array<ASTree>),
+    //right
+    //]
+    //return toAST(tree)
+    //}
+    //}
+    //debug("skipping");
+    //}
   }
 
   if (tree.kind === "UNION") {
@@ -106,6 +148,7 @@ export default function toAST(tree: ASTree): ASTree {
     );
   }
 
+  debug("default. iterating over children %O", tree.children);
   tree.children = tree.children.map((child) => toAST(child as ASTree));
   return tree;
 }

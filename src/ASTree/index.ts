@@ -15,6 +15,10 @@ export interface IAttributes {
   done?: boolean;
 }
 
+export type Predicate = (child: ASTree) => boolean;
+
+let globalId = 1;
+
 export default class ASTree {
   static readonly Lambda: ASTree = new ASTree({
     kind: "LAMBDA",
@@ -24,6 +28,7 @@ export default class ASTree {
   lexeme?: string;
   children?: Array<ASTree | undefined>;
   attributes: IAttributes;
+  id: number;
 
   constructor({
     kind,
@@ -40,6 +45,7 @@ export default class ASTree {
     this.lexeme = lexeme;
     this.children = children;
     this.attributes = attributes;
+    this.id = globalId++;
   }
 
   childrenLength(): number {
@@ -64,6 +70,11 @@ export default class ASTree {
 
   isStar(): boolean {
     return this.kind === "STAR";
+  }
+
+  isTerminal(): boolean {
+    // soon there might be more types that are terminals
+    return this.kind === "LITERAL";
   }
 
   getAttr<K extends keyof IAttributes>(key: K): IAttributes[K] {
@@ -123,6 +134,12 @@ export default class ASTree {
     const child = this.getChildIf(index, isChild);
     return !!child;
   }
-}
 
-export type Predicate = (child: ASTree) => boolean;
+  allChildrenAreTerminals(): boolean {
+    if (!this.children || this.children.length === 0) {
+      return false;
+    }
+
+    return this.children?.every((child) => child?.isTerminal());
+  }
+}
