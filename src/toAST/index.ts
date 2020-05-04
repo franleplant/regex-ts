@@ -3,41 +3,51 @@ import ASTree from "../ASTree";
 
 const debug = debugFactory("toAST");
 
+// An heuristic approach to turn the parse tree into
+// an AST that can be easily evaluated via a pre-order
+// tree traversal
 export default function toAST(tree: ASTree): ASTree {
   debug("input %O", tree);
   if (!tree.children || tree.children.length === 0) {
     return tree;
   }
 
-  //if (tree.kind === "ROOT") {
-  //tree.children = tree.children?.map(child => toAST(child as ASTree))
-  //return tree
-  //}
+  let newTree;
+  // try the heuristic and if it does return a new tree
+  // then we return that, otherwise let's keep trying other heuristics
+  if ((newTree = lambdaIntersectionHeuristic(tree))) {
+    return newTree;
+  }
+
+  if ((newTree = trivialIntersectionHeuristic(tree))) {
+    return newTree;
+  }
 
   if (tree.isIntersection()) {
     // TODO break this down,
     //TODO probably I do not need to check this length now that
     // im using safer wrappers
-    if (tree.children.length >= 2) {
-      debug("intersection(...any, lambda) => intersection(...any)");
 
-      const lambda = tree.popChildIf((child) => child.isLambda());
-      if (lambda) {
-        return toAST(tree);
-      }
+    //if (tree.children.length >= 2) {
+    //debug("intersection(...any, lambda) => intersection(...any)");
 
-      debug("skipping");
-    }
+    //const lambda = tree.popChildIf((child) => child.isLambda());
+    //if (lambda) {
+    //return toAST(tree);
+    //}
 
-    if (tree.childrenLength() === 1) {
-      debug("intersection(intersection(any)) => intersection(any)");
-      const intersection = tree.popChildIf((child) => child.isIntersection());
-      if (intersection) {
-        tree.children = intersection.children;
-        return toAST(tree);
-      }
-      debug("skipping");
-    }
+    //debug("skipping");
+    //}
+
+    //if (tree.childrenLength() === 1) {
+    //debug("intersection(intersection(any)) => intersection(any)");
+    //const intersection = tree.popChildIf((child) => child.isIntersection());
+    //if (intersection) {
+    //tree.children = intersection.children;
+    //return toAST(tree);
+    //}
+    //debug("skipping");
+    //}
 
     if (tree.children.length >= 2) {
       debug(
@@ -122,27 +132,9 @@ export default function toAST(tree: ASTree): ASTree {
       }
       debug("skipping");
     }
-
-    //if (tree.children.length >= 2) {
-    //debug("intersection(intersection(terminals), terminal) => intersection(terminals, terminal)")
-    //const left = tree.getChildIf(0, child => child.isIntersection() && child.allChildrenAreTerminals())
-    //if (left) {
-    //const right = tree.popChildIf(child => child.isTerminal())
-    //if (right) {
-    //debug("left %O", left)
-    //debug("right %O", right)
-    //tree.children = [
-    //...(left.children as Array<ASTree>),
-    //right
-    //]
-    //return toAST(tree)
-    //}
-    //}
-    //debug("skipping");
-    //}
   }
 
-  if (tree.kind === "UNION") {
+  if (tree.isUnion()) {
     tree.children = tree.children.filter(
       (child) => !(child as ASTree).isLambda()
     );
@@ -152,3 +144,30 @@ export default function toAST(tree: ASTree): ASTree {
   tree.children = tree.children.map((child) => toAST(child as ASTree));
   return tree;
 }
+
+type Heuristic = (tree: ASTree) => ASTree | undefined;
+
+export const lambdaIntersectionHeuristic: Heuristic = (tree) => {
+  debug("intersection(...any, lambda) => intersection(...any)");
+  if (tree.isIntersection() && tree.childrenLength() >= 2) {
+    const lambda = tree.popChildIf((child) => child.isLambda());
+    if (lambda) {
+      return toAST(tree);
+    }
+  }
+  debug("skipping");
+  return;
+};
+
+export const trivialIntersectionHeuristic: Heuristic = (tree) => {
+  debug("intersection(intersection(any)) => intersection(any)");
+  if (tree.isIntersection() && tree.childrenLength() === 1) {
+    const intersection = tree.popChildIf((child) => child.isIntersection());
+    if (intersection) {
+      tree.children = intersection.children;
+      return toAST(tree);
+    }
+  }
+  debug("skipping");
+  return;
+};
