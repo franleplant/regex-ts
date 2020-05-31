@@ -24,9 +24,10 @@ export default function evalTree(tree: ASTree): Automata {
   }
 
   if (!children) {
-    throw new Error(
-      `Invalid ASTree: No children ${JSON.stringify(tree, null, 2)}`
-    );
+    throw new Error(`Invalid ASTree`);
+    //throw new Error(
+    //`Invalid ASTree: No children ${JSON.stringify(tree, null, 2)}`
+    //);
   }
 
   if (kind === "ROOT") {
@@ -77,5 +78,6 @@ export default function evalTree(tree: ASTree): Automata {
       .toMin();
   }
 
-  throw new Error(`invalid ASTree ${JSON.stringify(tree, null, 2)}`);
+  throw new Error(`invalid ASTree`);
+  //throw new Error(`invalid ASTree ${JSON.stringify(tree, null, 2)}`);
 }

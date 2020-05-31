@@ -2,14 +2,15 @@
 
 //const debug = debugFactory("ASTree");
 
-export type NodeKind =
-  | "ROOT"
-  | "UNION"
-  | "INTERSECTION"
-  | "LAMBDA"
-  | "LITERAL"
-  | "PLUS"
-  | "STAR";
+export type NodeKind = string;
+//export type NodeKind =
+//| "ROOT"
+//| "UNION"
+//| "INTERSECTION"
+//| "LAMBDA"
+//| "LITERAL"
+//| "PLUS"
+//| "STAR";
 
 export interface IAttributes {
   done?: boolean;
@@ -24,11 +25,11 @@ export default class ASTree {
     kind: "LAMBDA",
   });
 
+  id: number;
   kind: NodeKind;
   lexeme?: string;
   children?: Array<ASTree | undefined>;
   attributes: IAttributes;
-  id: number;
 
   constructor({
     kind,
@@ -43,11 +44,12 @@ export default class ASTree {
     attributes?: IAttributes;
     id?: number;
   }) {
+    this.id = id;
+    this.attributes = attributes;
+
     this.kind = kind;
     this.lexeme = lexeme;
     this.children = children;
-    this.attributes = attributes;
-    this.id = id;
   }
 
   childrenLength(): number {
@@ -81,6 +83,25 @@ export default class ASTree {
 
   getAttr<K extends keyof IAttributes>(key: K): IAttributes[K] {
     return this.attributes[key];
+  }
+
+  /*
+    test if the children match a list of kinds,
+    useful to detec certain parse subtrees
+  */
+  childrenMatch(...expectedChildren: Array<string>): boolean {
+    if (!this.children) {
+      return false;
+    }
+
+    if (this.children.length !== expectedChildren.length) {
+      return false;
+    }
+
+    return this.children.every((child, index) => {
+      const expectedKind = expectedChildren[index];
+      return child?.kind === expectedKind;
+    });
   }
 
   popChild(): ASTree | undefined {
@@ -143,5 +164,32 @@ export default class ASTree {
     }
 
     return this.children?.every((child) => child?.isTerminal());
+  }
+
+  toString(): string {
+    return JSON.stringify(
+      this,
+      function (this: ASTree, key: string, value: any) {
+        //console.log("as", value?.isLambda);
+        if (value?.isLambda?.()) {
+          return "LAMBDA";
+        }
+
+        if (value?.kind === "LITERAL") {
+          return value?.lexeme;
+        }
+
+        if (key === "attributes" && Object.keys(value).length === 0) {
+          return undefined;
+        }
+
+        if (key === "children" && value?.length === 0) {
+          return undefined;
+        }
+
+        return value;
+      },
+      2
+    );
   }
 }

@@ -14,7 +14,9 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "noUnusedParameters": false,
+    "noUnusedLocals": false
   },
   "include": ["src/**/*"]
 }

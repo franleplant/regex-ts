@@ -122,7 +122,10 @@ export default class Parser {
       return subTree;
     }
 
-    return ASTree.Lambda;
+    return new ASTree({
+      kind: "A",
+      children: [ASTree.Lambda],
+    });
   }
 
   @logVT("S -> Literal A")
@@ -141,7 +144,7 @@ export default class Parser {
     }
 
     return new ASTree({
-      kind: "INTERSECTION",
+      kind: "S",
       children: [
         new ASTree({
           kind: "LITERAL",
@@ -173,8 +176,19 @@ export default class Parser {
     }
 
     return new ASTree({
-      kind: "INTERSECTION",
-      children: [left, right],
+      kind: "S",
+      children: [
+        new ASTree({
+          kind: "(",
+          children: [],
+        }),
+        left,
+        new ASTree({
+          kind: ")",
+          children: [],
+        }),
+        right,
+      ],
     });
   }
 
@@ -195,8 +209,8 @@ export default class Parser {
     }
 
     return new ASTree({
-      kind: "UNION",
-      children: [leftTree, rightTree],
+      kind: "A",
+      children: [new ASTree({ kind: "OR", children: [] }), leftTree, rightTree],
     });
   }
 
@@ -207,8 +221,14 @@ export default class Parser {
     }
 
     return new ASTree({
-      kind: "STAR",
-      children: [this.A()],
+      kind: "A",
+      children: [
+        new ASTree({
+          kind: "STAR",
+          children: [],
+        }),
+        this.A(),
+      ],
     });
   }
 
@@ -219,8 +239,14 @@ export default class Parser {
     }
 
     return new ASTree({
-      kind: "PLUS",
-      children: [this.A()],
+      kind: "A",
+      children: [
+        new ASTree({
+          kind: "PLUS",
+          children: [],
+        }),
+        this.A(),
+      ],
     });
   }
 
@@ -232,7 +258,7 @@ export default class Parser {
     }
 
     return new ASTree({
-      kind: "INTERSECTION",
+      kind: "A",
       children: [left, this.A()],
     });
   }
