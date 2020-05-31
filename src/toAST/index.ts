@@ -19,7 +19,9 @@ export default function toAST(tree: ASTree): ASTree {
     parenStar,
     parenOr,
     implicitIntersection,
+    parenIntersection,
     lambda,
+    lambdaNext,
   ];
 
   // try the heuristic and if it does return a new tree
@@ -69,6 +71,51 @@ export const parenStar: Heuristic = (tree) => {
       right as ASTree,
     ],
   });
+};
+
+//S -> ( S ) A
+//A -> S A
+//A -> lambda
+export const parenIntersection: Heuristic = (tree) => {
+  if (!tree.childrenMatch("(", "S", ")", "A")) {
+    return;
+  }
+
+  const [_parOpen, left, _parClose, right] = tree!.children as Array<ASTree>;
+  if (right?.childrenMatch("STAR", "A")) {
+    return;
+  }
+  if (right?.childrenMatch("PLUS", "A")) {
+    return;
+  }
+  if (right?.childrenMatch("OR", "S", "A")) {
+    return;
+  }
+  if (right?.childrenMatch("LAMBDA")) {
+    return left;
+  }
+
+  console.log("FUCK ME", toAST(right).toString());
+  return new ASTree({
+    kind: "INTERSECTION",
+    children: [left as ASTree, right as ASTree],
+  });
+};
+
+//A -> S A
+//A -> lambda
+export const lambdaNext: Heuristic = (tree) => {
+  if (!tree.childrenMatch("S", "A")) {
+    return;
+  }
+
+  const [s, a] = tree!.children as Array<ASTree>;
+
+  if (!a?.childrenMatch("LAMBDA")) {
+    return;
+  }
+
+  return s;
 };
 
 //S -> Lit A
@@ -146,7 +193,6 @@ export const implicitIntersection: Heuristic = (tree) => {
     literals.push(literal as ASTree);
 
     if (a?.childrenMatch("S", "A")) {
-      console.log("S A");
       const [nextCurrent, next] = a!.children as Array<ASTree>;
       current = nextCurrent;
       nexts.unshift(next);
@@ -155,7 +201,6 @@ export const implicitIntersection: Heuristic = (tree) => {
 
     // the left hand side of a union
     if (a?.childrenMatch("OR", "S", "A")) {
-      console.log("OR S A");
       const [_or, right, next] = a!.children as Array<ASTree>;
       nexts.unshift(next);
 
@@ -190,17 +235,40 @@ export const implicitIntersection: Heuristic = (tree) => {
       });
     }
 
+    if (a?.childrenMatch("STAR", "A")) {
+      const [_star, next] = a!.children as Array<ASTree>;
+      nexts.unshift(next);
+      const literal = literals.pop();
+      const starredLiteral = new ASTree({
+        kind: "STAR",
+        children: [literal],
+      });
+      literals.push(starredLiteral);
+
+      return new ASTree({
+        kind: "INTERSECTION",
+        children: [
+          new ASTree({
+            kind: "INTERSECTION",
+            children: literals,
+          }),
+          ...nexts.filter((node) => !node?.isLambda()),
+        ],
+      });
+    }
+
     // by default we intersect with things to the right
     // S -> Lit A
-    const left = new ASTree({
-      kind: "INTERSECTION",
-      children: literals,
-    });
+    //const left = new ASTree({
+    //kind: "INTERSECTION",
+    //children: literals,
+    //});
 
-    return new ASTree({
-      kind: "INTERSECTION",
-      children: [left, ...nexts.filter((node) => !node?.isLambda())],
-    });
+    //return new ASTree({
+    //kind: "INTERSECTION",
+    //children: [left, ...nexts.filter((node) => !node?.isLambda())],
+    //});
+    break;
   }
   debug("skipping 2");
   return;

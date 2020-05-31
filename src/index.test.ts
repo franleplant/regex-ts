@@ -24,12 +24,12 @@ test("RegExp basic case03 b*", (t) => {
   t.assert(!re.test("hola"));
 });
 
-test("RegExp basic case04 ab*c", (t) => {
-  const re = new RegExp("ab*c");
-  t.assert(re.test("ac"));
-  t.assert(re.test("abc"));
-  t.assert(re.test("abbc"));
-  t.assert(re.test("abbbbbbbbc"));
+test("RegExp basic case04 ab*cd", (t) => {
+  const re = new RegExp("ab*cd");
+  t.assert(re.test("acd"));
+  t.assert(re.test("abcd"));
+  t.assert(re.test("abbcd"));
+  t.assert(re.test("abbbbbbbbcd"));
   t.assert(!re.test("hola"));
 });
 
