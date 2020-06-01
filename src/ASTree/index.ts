@@ -2,6 +2,15 @@
 
 //const debug = debugFactory("ASTree");
 
+export enum EKind {
+  LAMBDA = "LAMBDA",
+  UNION = "UNION",
+  INTERSECTION = "INTERSECTION",
+  STAR = "STAR",
+  PLUS = "PLUS",
+  LITERAL = "LITERAL",
+}
+
 export type NodeKind = string;
 //export type NodeKind =
 //| "ROOT"
@@ -14,6 +23,7 @@ export type NodeKind = string;
 
 export interface IAttributes {
   done?: boolean;
+  intersectionOfUnion?: boolean;
 }
 
 export type Predicate = (child: ASTree) => boolean;
@@ -22,32 +32,53 @@ let globalId = 1;
 
 export default class ASTree {
   static readonly Lambda: ASTree = new ASTree({
-    kind: "LAMBDA",
+    kind: EKind.LAMBDA,
   });
+
+  static Union(children: Array<ASTree>): ASTree {
+    return new ASTree({
+      kind: EKind.UNION,
+      children,
+    });
+  }
+
+  static Intersection(children: Array<ASTree>): ASTree {
+    return new ASTree({
+      kind: EKind.INTERSECTION,
+      children,
+    });
+  }
+
+  static IntersectionOfUnion(children: Array<ASTree>): ASTree {
+    return new ASTree({
+      kind: EKind.INTERSECTION,
+      attributes: { intersectionOfUnion: true },
+      children,
+    });
+  }
 
   id: number;
   kind: NodeKind;
   lexeme?: string;
-  children?: Array<ASTree | undefined>;
+  children: Array<ASTree>;
   attributes: IAttributes;
 
   constructor({
     kind,
     lexeme,
-    children,
+    children = [],
     attributes = {},
     id = globalId++,
   }: {
     kind: NodeKind;
     lexeme?: string;
-    children?: Array<ASTree | undefined>;
+    children?: Array<ASTree>;
     attributes?: IAttributes;
     id?: number;
   }) {
     this.id = id;
-    this.attributes = attributes;
-
     this.kind = kind;
+    this.attributes = attributes;
     this.lexeme = lexeme;
     this.children = children;
   }
@@ -61,24 +92,34 @@ export default class ASTree {
   }
 
   isLambda(): boolean {
-    return this.kind === "LAMBDA";
+    return this.kind === EKind.LAMBDA;
   }
 
   isIntersection(): boolean {
-    return this.kind === "INTERSECTION";
+    return this.kind === EKind.INTERSECTION;
   }
 
   isUnion(): boolean {
-    return this.kind === "UNION";
+    return this.kind === EKind.UNION;
   }
 
   isStar(): boolean {
-    return this.kind === "STAR";
+    return this.kind === EKind.STAR;
   }
 
   isTerminal(): boolean {
     // soon there might be more types that are terminals
-    return this.kind === "LITERAL";
+    return this.kind === EKind.LITERAL;
+  }
+
+  isIntersectionOfUnion(): boolean {
+    return this.isIntersection() && !!this.attributes.intersectionOfUnion;
+  }
+
+  isAToLambda(): boolean {
+    const ret = this.kind === "A" && this.childrenMatch(EKind.LAMBDA);
+    if (ret) console.log("fkjhasd", this.toString());
+    return ret;
   }
 
   getAttr<K extends keyof IAttributes>(key: K): IAttributes[K] {

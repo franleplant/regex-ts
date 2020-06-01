@@ -220,15 +220,22 @@ export default class Parser {
       return;
     }
 
+    const children = [
+      new ASTree({
+        kind: "STAR",
+        children: [],
+      }),
+    ];
+
+    const subTree = this.A();
+
+    if (subTree) {
+      children.push(subTree);
+    }
+
     return new ASTree({
       kind: "A",
-      children: [
-        new ASTree({
-          kind: "STAR",
-          children: [],
-        }),
-        this.A(),
-      ],
+      children,
     });
   }
 
@@ -238,15 +245,21 @@ export default class Parser {
       return;
     }
 
+    const children = [
+      new ASTree({
+        kind: "PLUS",
+        children: [],
+      }),
+    ];
+
+    const subTree = this.A();
+    if (subTree) {
+      children.push(subTree);
+    }
+
     return new ASTree({
       kind: "A",
-      children: [
-        new ASTree({
-          kind: "PLUS",
-          children: [],
-        }),
-        this.A(),
-      ],
+      children,
     });
   }
 
@@ -257,9 +270,16 @@ export default class Parser {
       return;
     }
 
+    const children = [left];
+
+    const subTree = this.A();
+    if (subTree) {
+      children.push(subTree);
+    }
+
     return new ASTree({
       kind: "A",
-      children: [left, this.A()],
+      children,
     });
   }
 }

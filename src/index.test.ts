@@ -1,10 +1,10 @@
 import test from "ava";
 import RegExp from "./index";
 
-test("RegExp basic case01 ab|cd", (t) => {
-  const re = new RegExp("ab|cd");
-  t.assert(re.test("ab"));
-  t.assert(re.test("cd"));
+test("RegExp basic case01 abc|def", (t) => {
+  const re = new RegExp("abc|def");
+  t.assert(re.test("abc"));
+  t.assert(re.test("def"));
   t.assert(!re.test("hola"));
 });
 
