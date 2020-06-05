@@ -14,7 +14,7 @@ export default function toAST(tree: ASTree): ASTree {
     return tree;
   }
 
-  const heuristics: Array<Heuristic> = [four, one, two, three];
+  const heuristics: Array<Heuristic> = [hStar, one, two, three];
 
   // try the heuristic and if it does return a new tree
   // then we return that, otherwise let's keep trying other heuristics
@@ -41,13 +41,9 @@ export const one: Heuristic = (tree) => {
     let lit, a;
 
     if (isLiteral) {
-      const [_lit, _a] = tree.children.map(toAST);
-      lit = _lit;
-      a = _a;
+      [lit, a] = tree.children.map(toAST);
     } else {
-      const [_parOpen, _lit, _parClose, _a] = tree.children.map(toAST);
-      lit = _lit;
-      a = _a;
+      [, lit, , a] = tree.children.map(toAST);
     }
 
     if (a.isIntersectionOfUnion()) {
@@ -118,7 +114,7 @@ export const three: Heuristic = (tree) => {
 //A -> S A
 //S -> ( S ) A
 // A -> * A
-export const four: Heuristic = (tree) => {
+export const hStar: Heuristic = (tree) => {
   let starred, right;
   if (tree.childrenMatch("LITERAL", "A")) {
     [starred, right] = tree.children;
