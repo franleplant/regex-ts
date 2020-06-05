@@ -117,9 +117,7 @@ export default class ASTree {
   }
 
   isAToLambda(): boolean {
-    const ret = this.kind === "A" && this.childrenMatch(EKind.LAMBDA);
-    if (ret) console.log("fkjhasd", this.toString());
-    return ret;
+    return this.kind === "A" && this.childrenMatch(EKind.LAMBDA);
   }
 
   getAttr<K extends keyof IAttributes>(key: K): IAttributes[K] {
@@ -211,7 +209,6 @@ export default class ASTree {
     return JSON.stringify(
       this,
       function (this: ASTree, key: string, value: any) {
-        //console.log("as", value?.isLambda);
         if (value?.isLambda?.()) {
           return "LAMBDA";
         }

@@ -14,7 +14,7 @@ export default function toAST(tree: ASTree): ASTree {
     return tree;
   }
 
-  const heuristics: Array<Heuristic> = [one, two, three];
+  const heuristics: Array<Heuristic> = [four, one, two, three];
 
   // try the heuristic and if it does return a new tree
   // then we return that, otherwise let's keep trying other heuristics
@@ -76,14 +76,23 @@ export const one: Heuristic = (tree) => {
 //A -> or S A
 export const two: Heuristic = (tree) => {
   if (tree.childrenMatch("OR", "S", "A")) {
-    const [_or, right, next] = tree.children.map(toAST);
+    let [_or, right, next] = tree.children.map(toAST);
+    // A -> * A
+    if (next.childrenMatch("STAR", "A")) {
+      const [_star, otherNext] = next.children.map(toAST);
+      right = simplifyIntersection(
+        ASTree.Intersection([
+          new ASTree({
+            kind: "STAR",
+            children: [toAST(right)],
+          }),
+          otherNext,
+        ])
+      );
+    }
 
     return simplifyIntersection(
-      ASTree.IntersectionOfUnion([
-        ASTree.Union([ASTree.Lambda, right]),
-        next,
-        //...(next.isAToLambda() ? [] : [next])
-      ])
+      ASTree.IntersectionOfUnion([ASTree.Union([ASTree.Lambda, right]), next])
     );
   }
 
@@ -95,11 +104,50 @@ export const three: Heuristic = (tree) => {
   if (tree.childrenMatch("S", "A")) {
     const [left, right] = tree.children.map(toAST);
 
-    if (right.childrenMatch("LAMBDA")) {
+    if (right.isAToLambda()) {
       return left;
     }
 
     return simplifyIntersection(ASTree.Intersection([left, right]));
+  }
+
+  return;
+};
+
+//S -> Lit A
+//A -> S A
+//S -> ( S ) A
+// A -> * A
+export const four: Heuristic = (tree) => {
+  let starred, right;
+  if (tree.childrenMatch("LITERAL", "A")) {
+    [starred, right] = tree.children;
+  }
+
+  if (tree.childrenMatch("(", "S", ")", "A")) {
+    [, starred, , right] = tree.children;
+  }
+
+  if (tree.childrenMatch("S", "A")) {
+    [starred, right] = tree.children;
+  }
+
+  if (!starred && !right) {
+    return;
+  }
+
+  if (right?.childrenMatch("STAR", "A")) {
+    const [_star, next] = right.children.map(toAST);
+
+    return simplifyIntersection(
+      ASTree.Intersection([
+        new ASTree({
+          kind: "STAR",
+          children: [toAST(starred as ASTree)],
+        }),
+        next,
+      ])
+    );
   }
 
   return;
@@ -110,16 +158,11 @@ export const simplifyIntersection = (tree: ASTree): ASTree => {
     return tree;
   }
 
-  try {
-    // remove lambdas
-    tree.children = tree.children
-      .filter((node) => !!node)
-      .filter((node) => !node.isLambda())
-      .filter((node) => !node.isAToLambda());
-  } catch (err) {
-    console.error(tree.children);
-    throw err;
-  }
+  // remove lambdas
+  tree.children = tree.children
+    .filter((node) => !!node)
+    .filter((node) => !node.isLambda())
+    .filter((node) => !node.isAToLambda());
 
   if (tree.children.length === 0) {
     return ASTree.Lambda;

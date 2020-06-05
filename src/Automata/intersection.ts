@@ -1,9 +1,9 @@
-//import debugFactory from "debug";
+import debugFactory from "debug";
 import Automata, { INITIAL_STATE, LAMBDA } from "./Automata";
 import { IDelta } from "./types";
 import { getRenameMap, renameDelta } from "./tools";
 
-//const debug = debugFactory("Automata union");
+const debug = debugFactory("Automata:Intersection");
 
 // McNaughton Yamada Thompson algorithm
 // ref: Compilers Principles, Tecniques and Tools (The Dragon Book). 2nd Edition. Page 159
@@ -11,6 +11,8 @@ export default function intersection(
   left: Automata,
   right: Automata
 ): Automata {
+  debug("left %O", left);
+  debug("right %O", right);
   // no rename nececessary, we just want to calc the last state
   const leftStates = left.delta.getStates();
   const [, lastLeftState] = getRenameMap(leftStates, 0);
@@ -39,5 +41,7 @@ export default function intersection(
   // with the state number renamed
   const finals = right.finals.map((final) => rightRenameMap[final]);
 
-  return new Automata(delta, finals, "intersection");
+  const result = new Automata(delta, finals, "intersection");
+  debug("result %O", result);
+  return result;
 }

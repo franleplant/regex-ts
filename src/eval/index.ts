@@ -10,13 +10,16 @@ const debug = debugFactory("evalTree");
 // and computes a resulting automata
 export default function evalTree(tree: ASTree): Automata {
   const { kind, lexeme, children } = tree;
-  if (children?.length === 0) {
-    return Automata.empty();
-  }
+  //if (children?.length === 0) {
+  //return Automata.empty();
+  //}
 
   if (kind === "LITERAL") {
     assert(!!lexeme, "LITERAL require lexeme");
-    return Automata.word(lexeme as string);
+    debug("literal %O", tree);
+    const litAutomata = Automata.word(lexeme as string);
+    debug("literal result %O", litAutomata);
+    return litAutomata;
   }
 
   if (tree.isLambda()) {
@@ -39,10 +42,13 @@ export default function evalTree(tree: ASTree): Automata {
   }
 
   if (kind === "INTERSECTION") {
+    debug("intersection %O", children);
     const result = children.reduce(
       (acu, child) => intersection(acu, evalTree(child as ASTree)),
       Automata.empty()
     );
+
+    debug("intersection res %O", result);
     return result.toDFA().toMin();
   }
 

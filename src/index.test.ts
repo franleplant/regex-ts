@@ -8,10 +8,12 @@ test("RegExp basic case01 abc|def", (t) => {
   t.assert(!re.test("hola"));
 });
 
-test("RegExp basic case02 abx|cd", (t) => {
-  const re = new RegExp("abx|cd");
-  t.assert(re.test("abx"));
+test("RegExp basic case02 ab|c*d", (t) => {
+  const re = new RegExp("ab|c*d");
+  t.assert(re.test("ab"));
+  t.assert(re.test("d"));
   t.assert(re.test("cd"));
+  t.assert(re.test("ccccccd"));
   t.assert(!re.test("hola"));
 });
 
