@@ -24,6 +24,8 @@ const automatas: Array<Automata> = [
   Literal,
 ];
 
+export { Token, TokenKind };
+
 export default function lex(rawInput: string): Array<Token> {
   debug("input", rawInput);
   // We add a space as a form of input termination

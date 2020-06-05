@@ -145,6 +145,14 @@ test("RegExp basic case16 ab|cd+", (t) => {
   t.assert(!re.test("hola"));
 });
 
+test("RegExp literalSet case01 [abc]", (t) => {
+  const re = new RegExp("[abc]");
+  t.assert(re.test("a"));
+  t.assert(re.test("b"));
+  t.assert(re.test("c"));
+  t.assert(!re.test("hola"));
+});
+
 test("RegExp case1 hello|bye", (t) => {
   const re = new RegExp("hello|bye");
   t.assert(re.test("hello"));

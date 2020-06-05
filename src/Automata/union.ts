@@ -40,3 +40,10 @@ export default function union(left: Automata, right: Automata): Automata {
 
   return new Automata(delta, [FINAL_STATE], "union");
 }
+
+export function listUnion(automatas: Array<Automata>): Automata {
+  return automatas.reduce(
+    (unionAcu, automata) => union(unionAcu, automata),
+    Automata.empty()
+  );
+}
