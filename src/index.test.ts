@@ -153,6 +153,17 @@ test("RegExp literalSet case01 [abc]", (t) => {
   t.assert(!re.test("hola"));
 });
 
+test("RegExp literalSet case02 [abc]*", (t) => {
+  const re = new RegExp("[abc]*");
+  t.assert(re.test(""));
+  t.assert(re.test("a"));
+  t.assert(re.test("b"));
+  t.assert(re.test("c"));
+  t.assert(re.test("abc"));
+  t.assert(re.test("abbcccaaaacb"));
+  t.assert(!re.test("hola"));
+});
+
 test("RegExp case1 hello|bye", (t) => {
   const re = new RegExp("hello|bye");
   t.assert(re.test("hello"));
