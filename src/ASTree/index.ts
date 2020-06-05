@@ -120,10 +120,6 @@ export default class ASTree {
     return this.kind === "A" && this.childrenMatch(EKind.LAMBDA);
   }
 
-  getAttr<K extends keyof IAttributes>(key: K): IAttributes[K] {
-    return this.attributes[key];
-  }
-
   /*
     test if the children match a list of kinds,
     useful to detec certain parse subtrees
@@ -141,68 +137,6 @@ export default class ASTree {
       const expectedKind = expectedChildren[index];
       return child?.kind === expectedKind;
     });
-  }
-
-  popChild(): ASTree | undefined {
-    if (!this.children || this.children.length === 0) {
-      return;
-    }
-
-    return this.children.pop();
-  }
-
-  popChildIf(shouldPop: Predicate): ASTree | undefined {
-    if (!this.children || this.children.length === 0) {
-      return;
-    }
-
-    const lastChild = this.children[this.children.length - 1];
-    if (!lastChild) {
-      return;
-    }
-
-    if (shouldPop(lastChild)) {
-      return this.children.pop();
-    }
-    return;
-  }
-
-  getChild(index: number): ASTree | undefined {
-    if (!this.children) {
-      return;
-    }
-
-    return this.children[index];
-  }
-
-  getChildIf(index: number, isChild: Predicate): ASTree | undefined {
-    if (!this.children || this.children.length === 0) {
-      return;
-    }
-
-    const child = this.children[index];
-    if (!child) {
-      return;
-    }
-
-    if (isChild(child)) {
-      return child;
-    }
-    return;
-  }
-
-  // TODO document
-  isChildAt(index: number, isChild: Predicate): boolean {
-    const child = this.getChildIf(index, isChild);
-    return !!child;
-  }
-
-  allChildrenAreTerminals(): boolean {
-    if (!this.children || this.children.length === 0) {
-      return false;
-    }
-
-    return this.children?.every((child) => child?.isTerminal());
   }
 
   toString(): string {
