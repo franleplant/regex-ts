@@ -17,10 +17,11 @@ export default class RegExp {
     debug("lex result %O", tokens);
 
     const parseTree = new Parser(tokens).parse();
-    debug("parser result %O", parseTree);
+    debug("parser result %s", parseTree.toString());
 
     const ast = toAST(parseTree);
-    debug("toAST result %O", ast);
+    debug("toAST result %s", ast.toString());
+    //console.log()
 
     this.automata = evalTree(ast);
     debug("eval result %O", this.automata);

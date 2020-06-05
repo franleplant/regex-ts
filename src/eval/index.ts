@@ -10,13 +10,16 @@ const debug = debugFactory("evalTree");
 // and computes a resulting automata
 export default function evalTree(tree: ASTree): Automata {
   const { kind, lexeme, children } = tree;
-  if (children?.length === 0) {
-    return Automata.empty();
-  }
+  //if (children?.length === 0) {
+  //return Automata.empty();
+  //}
 
   if (kind === "LITERAL") {
     assert(!!lexeme, "LITERAL require lexeme");
-    return Automata.word(lexeme as string);
+    debug("literal %O", tree);
+    const litAutomata = Automata.word(lexeme as string);
+    debug("literal result %O", litAutomata);
+    return litAutomata;
   }
 
   if (tree.isLambda()) {
@@ -24,9 +27,10 @@ export default function evalTree(tree: ASTree): Automata {
   }
 
   if (!children) {
-    throw new Error(
-      `Invalid ASTree: No children ${JSON.stringify(tree, null, 2)}`
-    );
+    throw new Error(`Invalid ASTree`);
+    //throw new Error(
+    //`Invalid ASTree: No children ${JSON.stringify(tree, null, 2)}`
+    //);
   }
 
   if (kind === "ROOT") {
@@ -38,10 +42,13 @@ export default function evalTree(tree: ASTree): Automata {
   }
 
   if (kind === "INTERSECTION") {
+    debug("intersection %O", children);
     const result = children.reduce(
       (acu, child) => intersection(acu, evalTree(child as ASTree)),
       Automata.empty()
     );
+
+    debug("intersection res %O", result);
     return result.toDFA().toMin();
   }
 
@@ -77,5 +84,6 @@ export default function evalTree(tree: ASTree): Automata {
       .toMin();
   }
 
-  throw new Error(`invalid ASTree ${JSON.stringify(tree, null, 2)}`);
+  throw new Error(`invalid ASTree`);
+  //throw new Error(`invalid ASTree ${JSON.stringify(tree, null, 2)}`);
 }

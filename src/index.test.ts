@@ -1,17 +1,19 @@
 import test from "ava";
 import RegExp from "./index";
 
-test("RegExp basic case01 ab|cd", (t) => {
-  const re = new RegExp("ab|cd");
-  t.assert(re.test("ab"));
-  t.assert(re.test("cd"));
+test("RegExp basic case01 abc|def", (t) => {
+  const re = new RegExp("abc|def");
+  t.assert(re.test("abc"));
+  t.assert(re.test("def"));
   t.assert(!re.test("hola"));
 });
 
-test("RegExp basic case02 abx|cd", (t) => {
-  const re = new RegExp("abx|cd");
-  t.assert(re.test("abx"));
+test("RegExp basic case02 ab|c*d", (t) => {
+  const re = new RegExp("ab|c*d");
+  t.assert(re.test("ab"));
+  t.assert(re.test("d"));
   t.assert(re.test("cd"));
+  t.assert(re.test("ccccccd"));
   t.assert(!re.test("hola"));
 });
 
@@ -24,12 +26,12 @@ test("RegExp basic case03 b*", (t) => {
   t.assert(!re.test("hola"));
 });
 
-test("RegExp basic case04 ab*c", (t) => {
-  const re = new RegExp("ab*c");
-  t.assert(re.test("ac"));
-  t.assert(re.test("abc"));
-  t.assert(re.test("abbc"));
-  t.assert(re.test("abbbbbbbbc"));
+test("RegExp basic case04 ab*cd", (t) => {
+  const re = new RegExp("ab*cd");
+  t.assert(re.test("acd"));
+  t.assert(re.test("abcd"));
+  t.assert(re.test("abbcd"));
+  t.assert(re.test("abbbbbbbbcd"));
   t.assert(!re.test("hola"));
 });
 
