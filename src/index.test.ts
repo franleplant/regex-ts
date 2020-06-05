@@ -1,6 +1,7 @@
 import test from "ava";
 import RegExp from "./index";
 
+//TODO maybe break this down by category or something
 test("RegExp basic case01 abc|def", (t) => {
   const re = new RegExp("abc|def");
   t.assert(re.test("abc"));
@@ -117,6 +118,33 @@ test("RegExp basic case13 (a|b)*", (t) => {
   t.assert(!re.test("hola"));
 });
 
+test("RegExp basic case14 a+", (t) => {
+  const re = new RegExp("a+");
+  t.assert(re.test("a"));
+  t.assert(re.test("aa"));
+  t.assert(re.test("aaaaaaaaa"));
+  t.assert(!re.test("hola"));
+});
+
+test("RegExp basic case15 ab+c", (t) => {
+  const re = new RegExp("ab+c");
+  t.assert(re.test("abc"));
+  t.assert(re.test("abbc"));
+  t.assert(re.test("abbbbbc"));
+  t.assert(!re.test("ac"));
+  t.assert(!re.test("hola"));
+});
+
+test("RegExp basic case16 ab|cd+", (t) => {
+  const re = new RegExp("ab|cd+");
+  t.assert(re.test("ab"));
+  t.assert(re.test("cd"));
+  t.assert(re.test("cdd"));
+  t.assert(re.test("cddddd"));
+  t.assert(!re.test("c"));
+  t.assert(!re.test("hola"));
+});
+
 test("RegExp case1 hello|bye", (t) => {
   const re = new RegExp("hello|bye");
   t.assert(re.test("hello"));
@@ -146,7 +174,7 @@ test("RegExp https", (t) => {
 });
 
 test("RegExp https://a+.com", (t) => {
-  const re = new RegExp("(http|https)://aa*.com");
+  const re = new RegExp("(http|https)://a+.com");
   t.assert(re.test("http://aaaaaa.com"));
   t.assert(re.test("https://aaaaa.com"));
   t.assert(!re.test("hola"));
