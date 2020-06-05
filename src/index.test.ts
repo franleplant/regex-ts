@@ -192,9 +192,11 @@ test("RegExp https", (t) => {
   t.assert(!re.test("hola"));
 });
 
-test("RegExp https://a+.com", (t) => {
-  const re = new RegExp("(http|https)://a+.com");
-  t.assert(re.test("http://aaaaaa.com"));
-  t.assert(re.test("https://aaaaa.com"));
+test("RegExp urls", (t) => {
+  const re = new RegExp(
+    "(http|https)://[abcdefghijklmnopqrstuvwxyz0123456789]+.com"
+  );
+  t.assert(re.test("http://google.com"));
+  t.assert(re.test("https://yahoo.com"));
   t.assert(!re.test("hola"));
 });
