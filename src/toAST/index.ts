@@ -32,6 +32,7 @@ export default function toAST(tree: ASTree): ASTree {
 
 //S -> Lit A
 //S -> ( S ) A
+// TODO do we need to cover A -> S A ?
 
 export const one: Heuristic = (tree) => {
   debug("S -> Lit A | ( S ) A");
@@ -74,12 +75,12 @@ export const two: Heuristic = (tree) => {
   if (tree.childrenMatch("OR", "S", "A")) {
     let [_or, right, next] = tree.children.map(toAST);
     // A -> * A
-    if (next.childrenMatch("STAR", "A")) {
-      const [_star, otherNext] = next.children.map(toAST);
+    if (next.childrenMatch("STAR", "A") && next.childrenMatch("PLUS", "A")) {
+      const [starOrPlus, otherNext] = next.children.map(toAST);
       right = simplifyIntersection(
         ASTree.Intersection([
           new ASTree({
-            kind: "STAR",
+            kind: starOrPlus.kind,
             children: [toAST(right)],
           }),
           otherNext,
@@ -95,7 +96,10 @@ export const two: Heuristic = (tree) => {
   return;
 };
 
-//A -> S A
+// P1:
+// A -> S A
+// P2
+//
 export const three: Heuristic = (tree) => {
   if (tree.childrenMatch("S", "A")) {
     const [left, right] = tree.children.map(toAST);
@@ -110,9 +114,15 @@ export const three: Heuristic = (tree) => {
   return;
 };
 
+// Heuristic for Star and Plus operator.
+// We check two productions P1 -> P2
+// P1
 //S -> Lit A
 //A -> S A
 //S -> ( S ) A
+//
+// P2
+// A -> * A
 // A -> * A
 export const hStar: Heuristic = (tree) => {
   let starred, right;
@@ -132,13 +142,13 @@ export const hStar: Heuristic = (tree) => {
     return;
   }
 
-  if (right?.childrenMatch("STAR", "A")) {
-    const [_star, next] = right.children.map(toAST);
+  if (right?.childrenMatch("STAR", "A") || right?.childrenMatch("PLUS", "A")) {
+    const [starOrPlus, next] = right.children.map(toAST);
 
     return simplifyIntersection(
       ASTree.Intersection([
         new ASTree({
-          kind: "STAR",
+          kind: starOrPlus.kind,
           children: [toAST(starred as ASTree)],
         }),
         next,
