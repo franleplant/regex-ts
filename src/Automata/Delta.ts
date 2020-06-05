@@ -90,12 +90,9 @@ export default class Delta {
   getSymbols(): Array<ISymbol> {
     const symbols = new Set<ISymbol>();
     this.delta.forEach(([_state, symbol, _nextState]) => {
-      if (Array.isArray(symbol)) {
-        throw new Error(
-          `Delta.getSymbols: cannot compute because of shorthand symbol array`
-        );
-      }
-      symbols.add(symbol);
+      (Array.isArray(symbol) ? symbol : [symbol]).forEach((symbol) => {
+        symbols.add(symbol);
+      });
     });
 
     return [...symbols];

@@ -1,14 +1,31 @@
 import debugFactory from "debug";
 import { Automata } from "../Automata";
 import Token, { TokenKind } from "./Token";
-import { ParOpen, ParClose, Star, Plus, Or, Literal } from "./validTokens";
+import {
+  ParOpen,
+  ParClose,
+  Star,
+  Plus,
+  Or,
+  Literal,
+  LiteralSet,
+} from "./validTokens";
 
 const debug = debugFactory("lexer");
 
 // The order is important!
-const automatas: Array<Automata> = [ParOpen, ParClose, Star, Plus, Or, Literal];
+const automatas: Array<Automata> = [
+  ParOpen,
+  ParClose,
+  Star,
+  Plus,
+  Or,
+  LiteralSet,
+  Literal,
+];
 
 export default function lex(rawInput: string): Array<Token> {
+  debug("input", rawInput);
   // We add a space as a form of input termination
   const input = rawInput + " ";
   const tokens: Array<Token> = [];
@@ -29,7 +46,9 @@ export default function lex(rawInput: string): Array<Token> {
     // a valid token
     let candidates: Array<TokenKind> = [];
     let lexeme = "";
+    const start = index;
     while (true) {
+      debug("candidates", candidates);
       // under the asumption that no token will accept whitespaces
       // this is safe to do here without other checks
       const char = input[index];
@@ -53,12 +72,15 @@ export default function lex(rawInput: string): Array<Token> {
     // string that is a valid token or we found an error
 
     if (candidates.length === 0) {
-      throw new Error(`Parser Error: unexpected token ${lexeme}`);
+      const left = input.slice(0, index);
+      const right = input.slice(index);
+      const errorAt = `${left}>${right}`;
+      throw new Error(`Parser Error: unexpected token ${lexeme} at ${errorAt}`);
     }
 
     // produce the new token with the information
     // in the previous iteration
-    const token = new Token(candidates[0], lexeme);
+    const token = new Token(candidates[0], lexeme, start);
     tokens.push(token);
     //console.log("new token", token);
 
@@ -68,7 +90,8 @@ export default function lex(rawInput: string): Array<Token> {
   }
 
   // add an EOF token
-  tokens.push(Token.EOF());
+  tokens.push(Token.EOF(index - 1));
+  debug("result", tokens);
   return tokens;
 }
 
