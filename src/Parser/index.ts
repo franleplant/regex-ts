@@ -130,7 +130,7 @@ export default class Parser {
 
   @logVT("S -> Literal A")
   S1(): ASTree | undefined {
-    const literal = this.eatToken("LITERAL");
+    const literal = this.eatToken("LITERAL") || this.eatToken("LITERAL_SET");
     if (!literal) {
       return;
     }
@@ -145,13 +145,7 @@ export default class Parser {
 
     return new ASTree({
       kind: "S",
-      children: [
-        new ASTree({
-          kind: "LITERAL",
-          lexeme: literal.lexeme,
-        }),
-        subTree,
-      ],
+      children: [ASTree.Literal(literal), subTree],
     });
   }
 

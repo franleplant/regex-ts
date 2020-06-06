@@ -1,7 +1,15 @@
 import assert from "assert";
 import debugFactory from "debug";
-import ASTree from "../ASTree";
-import { Automata, union, intersection, star, plus } from "../Automata";
+import ASTree, { EKind } from "../ASTree";
+import {
+  Automata,
+  union,
+  listUnion,
+  intersection,
+  listIntersection,
+  star,
+  plus,
+} from "../Automata";
 
 const debug = debugFactory("evalTree");
 
@@ -9,17 +17,22 @@ const debug = debugFactory("evalTree");
 // that crawls the tree in a pre-order fashion
 // and computes a resulting automata
 export default function evalTree(tree: ASTree): Automata {
+  debug("input %s", tree.toString());
   const { kind, lexeme, children } = tree;
-  //if (children?.length === 0) {
-  //return Automata.empty();
-  //}
 
-  if (kind === "LITERAL") {
+  if (kind === EKind.LITERAL) {
     assert(!!lexeme, "LITERAL require lexeme");
     debug("literal %O", tree);
-    const litAutomata = Automata.word(lexeme as string);
-    debug("literal result %O", litAutomata);
-    return litAutomata;
+    let automata = Automata.word(lexeme as string);
+    if (tree.isLiteralSet()) {
+      automata = listUnion(
+        (lexeme || "").split("").map((symbol) => Automata.word(symbol))
+      )
+        .toDFA()
+        .toMin();
+    }
+    debug("literal result %O", automata);
+    return automata;
   }
 
   if (tree.isLambda()) {
@@ -43,13 +56,9 @@ export default function evalTree(tree: ASTree): Automata {
 
   if (kind === "INTERSECTION") {
     debug("intersection %O", children);
-    const result = children.reduce(
-      (acu, child) => intersection(acu, evalTree(child as ASTree)),
-      Automata.empty()
-    );
-
-    debug("intersection res %O", result);
-    return result.toDFA().toMin();
+    const automata = listIntersection(children.map(evalTree)).toDFA().toMin();
+    debug("intersection res %O", automata);
+    return automata;
   }
 
   if (kind === "UNION") {

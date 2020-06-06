@@ -45,3 +45,10 @@ export default function intersection(
   debug("result %O", result);
   return result;
 }
+
+export function listIntersection(automatas: Array<Automata>): Automata {
+  return automatas.reduce(
+    (intersectionAcu, automata) => intersection(intersectionAcu, automata),
+    Automata.empty()
+  );
+}

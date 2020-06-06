@@ -145,6 +145,25 @@ test("RegExp basic case16 ab|cd+", (t) => {
   t.assert(!re.test("hola"));
 });
 
+test("RegExp literalSet case01 [abc]", (t) => {
+  const re = new RegExp("[abc]");
+  t.assert(re.test("a"));
+  t.assert(re.test("b"));
+  t.assert(re.test("c"));
+  t.assert(!re.test("hola"));
+});
+
+test("RegExp literalSet case02 [abc]*", (t) => {
+  const re = new RegExp("[abc]*");
+  t.assert(re.test(""));
+  t.assert(re.test("a"));
+  t.assert(re.test("b"));
+  t.assert(re.test("c"));
+  t.assert(re.test("abc"));
+  t.assert(re.test("abbcccaaaacb"));
+  t.assert(!re.test("hola"));
+});
+
 test("RegExp case1 hello|bye", (t) => {
   const re = new RegExp("hello|bye");
   t.assert(re.test("hello"));
@@ -173,9 +192,11 @@ test("RegExp https", (t) => {
   t.assert(!re.test("hola"));
 });
 
-test("RegExp https://a+.com", (t) => {
-  const re = new RegExp("(http|https)://a+.com");
-  t.assert(re.test("http://aaaaaa.com"));
-  t.assert(re.test("https://aaaaa.com"));
+test("RegExp urls", (t) => {
+  const re = new RegExp(
+    "(http|https)://[abcdefghijklmnopqrstuvwxyz0123456789]+.com"
+  );
+  t.assert(re.test("http://google.com"));
+  t.assert(re.test("https://yahoo.com"));
   t.assert(!re.test("hola"));
 });

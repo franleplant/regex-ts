@@ -29,7 +29,7 @@ export default class Automata {
   }
 
   private state: IState = INITIAL_STATE;
-  public readonly label: string;
+  public label: string;
   public readonly delta: Delta;
   public readonly finals: Array<IState>;
 

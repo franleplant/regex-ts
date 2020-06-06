@@ -1,4 +1,5 @@
 //import debugFactory from "debug";
+import { Token } from "../lexer";
 
 //const debug = debugFactory("ASTree");
 
@@ -12,18 +13,13 @@ export enum EKind {
 }
 
 export type NodeKind = string;
-//export type NodeKind =
-//| "ROOT"
-//| "UNION"
-//| "INTERSECTION"
-//| "LAMBDA"
-//| "LITERAL"
-//| "PLUS"
-//| "STAR";
 
 export interface IAttributes {
+  //TODO is this still used?
   done?: boolean;
+
   intersectionOfUnion?: boolean;
+  literalSet?: boolean;
 }
 
 export type Predicate = (child: ASTree) => boolean;
@@ -34,6 +30,20 @@ export default class ASTree {
   static readonly Lambda: ASTree = new ASTree({
     kind: EKind.LAMBDA,
   });
+
+  static Literal(token: Token): ASTree {
+    const attributes = {} as IAttributes;
+    const kind = EKind.LITERAL;
+    let lexeme = token.lexeme;
+
+    if (token.isKind("LITERAL_SET")) {
+      // turn [abc] to abc
+      lexeme = token.lexeme.slice(1).slice(0, -1);
+      attributes.literalSet = true;
+    }
+
+    return new ASTree({ kind, lexeme, attributes });
+  }
 
   static Union(children: Array<ASTree>): ASTree {
     return new ASTree({
@@ -110,6 +120,10 @@ export default class ASTree {
   isTerminal(): boolean {
     // soon there might be more types that are terminals
     return this.kind === EKind.LITERAL;
+  }
+
+  isLiteralSet(): boolean {
+    return this.kind === EKind.LITERAL && !!this.attributes.literalSet;
   }
 
   isIntersectionOfUnion(): boolean {
