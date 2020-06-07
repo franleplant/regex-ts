@@ -176,11 +176,7 @@ export default class ASTree {
       return this.kind;
     }
 
-    if (this.isLiteral()) {
-      return this.lexeme as string;
-    }
-
-    if (this.isLiteralSet()) {
+    if (this.isLiteral() || this.isLiteralSet()) {
       return this.lexeme as string;
     }
 
