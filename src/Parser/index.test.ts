@@ -1,41 +1,22 @@
 import test from "ava";
 import Parser from "./index";
 import Token from "../lexer/Token";
-import ASTree from "../ASTree";
+import ASTree, { ISimpleNode } from "../ASTree";
 
-//TODO fix parser tests
-test.skip("Parser basic case01 a", (t) => {
+// Yarn break this big test into smaller files to make it more managable
+test("Parser basic case01 a", (t) => {
   const parser = new Parser([new Token("LITERAL", "a"), Token.EOF()]);
 
   const tree = parser.parse();
 
-  const expected = new ASTree({
-    kind: "ROOT",
-    children: [
-      new ASTree({
-        kind: "INTERSECTION",
-        children: [
-          new ASTree({
-            kind: "LITERAL",
-            lexeme: "a",
-            attributes: {},
-            id: 2,
-          }),
-          new ASTree({ kind: "LAMBDA", attributes: {}, id: 1 }),
-        ],
-        attributes: {},
-        id: 3,
-      }),
-    ],
-    attributes: {},
-    id: 4,
-  });
+  const expected = {
+    ROOT: [{ S: ["a", { A: ["LAMBDA"] }] }],
+  } as ISimpleNode;
 
-  t.deepEqual(tree, expected);
+  t.deepEqual(tree.toJSON(), expected);
 });
 
-// TODO fix this test and probably figure a simpler way to structure it
-test.skip("Parser basic case02 ((abc))", (t) => {
+test("Parser basic case02 ((abc))", (t) => {
   const parser = new Parser([
     new Token("(", ""),
     new Token("(", ""),
@@ -48,144 +29,155 @@ test.skip("Parser basic case02 ((abc))", (t) => {
   ]);
 
   const tree = parser.parse();
-  console.log(JSON.stringify(tree, null, 2));
-  const expected = new ASTree({
-    kind: "ROOT",
-    children: [
-      new ASTree({
-        kind: "INTERSECTION",
-        lexeme: undefined,
-        children: [
-          new ASTree({ kind: "LITERAL", lexeme: "a", children: undefined }),
-          new ASTree({
-            kind: "INTERSECTION",
-            lexeme: undefined,
-            children: [
-              new ASTree({
-                kind: "LITERAL",
-                lexeme: "b",
-                children: undefined,
-              }),
-              new ASTree({
-                kind: "LITERAL",
-                lexeme: "c",
-                children: undefined,
-              }),
-            ],
-          }),
-        ],
-      }),
-    ],
-  });
 
-  t.deepEqual(tree, expected);
-});
-
-// TODO fix this test and probably figure a simpler way to structure it
-test.skip("Parser Union: a|b", (t) => {
-  const parser = new Parser([
-    new Token("LITERAL", "a"),
-    new Token("OR", ""),
-    new Token("LITERAL", "b"),
-    Token.EOF(),
-  ]);
-
-  const tree = parser.parse();
-  const expected = new ASTree({
-    kind: "ROOT",
-    children: [
-      new ASTree({
-        kind: "UNION",
-        children: [
-          new ASTree({
-            kind: "LITERAL",
-            lexeme: "a",
-          }),
-          new ASTree({
-            kind: "LITERAL",
-            lexeme: "b",
-          }),
-        ],
-      }),
-    ],
-  });
-
-  console.log("tree", JSON.stringify(tree, null, 2));
-
-  t.deepEqual(tree, expected);
-});
-
-// TODO fix this test and probably figure a simpler way to structure it
-test.skip("Parser Union: a|b(abc)", (t) => {
-  const parser = new Parser([
-    new Token("LITERAL", "a"),
-    new Token("OR", ""),
-    new Token("LITERAL", "b"),
-    new Token("(", ""),
-    new Token("LITERAL", "a"),
-    new Token("LITERAL", "b"),
-    new Token("LITERAL", "c"),
-    new Token(")", ""),
-    Token.EOF(),
-  ]);
-
-  const tree = parser.parse();
-  const expected = new ASTree({
-    kind: "ROOT",
-    children: [
-      new ASTree({
-        kind: "UNION",
-        children: [
-          new ASTree({
-            kind: "LITERAL",
-            lexeme: "a",
-          }),
-          new ASTree({
-            kind: "INTERSECTION",
-            children: [
-              new ASTree({
-                kind: "LITERAL",
-                lexeme: "b",
-              }),
-              new ASTree({
-                kind: "INTERSECTION",
-                lexeme: undefined,
-                children: [
-                  new ASTree({
-                    kind: "LITERAL",
-                    lexeme: "a",
-                    children: undefined,
-                  }),
-                  new ASTree({
-                    kind: "INTERSECTION",
-                    lexeme: undefined,
-                    children: [
-                      new ASTree({
-                        kind: "LITERAL",
-                        lexeme: "b",
-                        children: undefined,
-                      }),
-                      new ASTree({
-                        kind: "LITERAL",
-                        lexeme: "c",
-                        children: undefined,
-                      }),
+  const expected = {
+    ROOT: [
+      {
+        S: [
+          "(",
+          {
+            S: [
+              "(",
+              {
+                S: [
+                  "a",
+                  {
+                    A: [
+                      {
+                        S: [
+                          "b",
+                          {
+                            A: [
+                              { S: ["c", { A: ["LAMBDA"] }] },
+                              { A: ["LAMBDA"] },
+                            ],
+                          },
+                        ],
+                      },
+                      { A: ["LAMBDA"] },
                     ],
-                  }),
+                  },
                 ],
-              }),
+              },
+              ")",
+              { A: ["LAMBDA"] },
             ],
-          }),
+          },
+          ")",
+          { A: ["LAMBDA"] },
         ],
-      }),
+      },
     ],
-  });
+  } as ISimpleNode;
 
-  t.deepEqual(tree, expected);
+  t.deepEqual(tree.toJSON(), expected);
 });
 
-// TODO fix this test and probably figure a simpler way to structure it
-test.skip("Parser Union: (a|b)abc", (t) => {
+test("Parser Union: a|b", (t) => {
+  const parser = new Parser([
+    new Token("LITERAL", "a"),
+    new Token("OR", ""),
+    new Token("LITERAL", "b"),
+    Token.EOF(),
+  ]);
+
+  const tree = parser.parse();
+  const expected = {
+    ROOT: [
+      {
+        S: [
+          "a",
+          {
+            A: [
+              "OR",
+              {
+                S: ["b", { A: ["LAMBDA"] }],
+              },
+              { A: ["LAMBDA"] },
+            ],
+          },
+        ],
+      },
+    ],
+  } as ISimpleNode;
+
+  t.deepEqual(tree.toJSON(), expected);
+});
+
+test("Parser Union: a|b(abc)", (t) => {
+  const parser = new Parser([
+    new Token("LITERAL", "a"),
+    new Token("OR", ""),
+    new Token("LITERAL", "b"),
+    new Token("(", ""),
+    new Token("LITERAL", "a"),
+    new Token("LITERAL", "b"),
+    new Token("LITERAL", "c"),
+    new Token(")", ""),
+    Token.EOF(),
+  ]);
+
+  const tree = parser.parse();
+  const expected = {
+    ROOT: [
+      {
+        S: [
+          "a",
+          {
+            A: [
+              "OR",
+              {
+                S: [
+                  "b",
+                  {
+                    A: [
+                      {
+                        S: [
+                          "(",
+                          {
+                            S: [
+                              "a",
+                              {
+                                A: [
+                                  {
+                                    S: [
+                                      "b",
+                                      {
+                                        A: [
+                                          {
+                                            S: ["c", { A: ["LAMBDA"] }],
+                                          },
+                                          { A: ["LAMBDA"] },
+                                        ],
+                                      },
+                                    ],
+                                  },
+                                  { A: ["LAMBDA"] },
+                                ],
+                              },
+                            ],
+                          },
+                          ")",
+                          { A: ["LAMBDA"] },
+                        ],
+                      },
+                      { A: ["LAMBDA"] },
+                    ],
+                  },
+                ],
+              },
+              { A: ["LAMBDA"] },
+            ],
+          },
+        ],
+      },
+    ],
+  } as ISimpleNode;
+
+  t.deepEqual(tree.toJSON(), expected);
+});
+
+test("Parser Union: (a|b)abc", (t) => {
   const parser = new Parser([
     new Token("(", ""),
     new Token("LITERAL", "a"),
@@ -199,62 +191,81 @@ test.skip("Parser Union: (a|b)abc", (t) => {
   ]);
 
   const tree = parser.parse();
-  const expected = new ASTree({
-    kind: "ROOT",
-    children: [
-      new ASTree({
-        kind: "INTERSECTION",
-        children: [
-          new ASTree({
-            kind: "UNION",
-            children: [
-              new ASTree({
-                kind: "LITERAL",
-                lexeme: "a",
-              }),
-              new ASTree({
-                kind: "LITERAL",
-                lexeme: "b",
-              }),
-            ],
-          }),
-          new ASTree({
-            kind: "INTERSECTION",
-            lexeme: undefined,
-            children: [
-              new ASTree({
-                kind: "LITERAL",
-                lexeme: "a",
-                children: undefined,
-              }),
-              new ASTree({
-                kind: "INTERSECTION",
-                lexeme: undefined,
-                children: [
-                  new ASTree({
-                    kind: "LITERAL",
-                    lexeme: "b",
-                    children: undefined,
-                  }),
-                  new ASTree({
-                    kind: "LITERAL",
-                    lexeme: "c",
-                    children: undefined,
-                  }),
+  const expected = {
+    ROOT: [
+      {
+        S: [
+          "(",
+          {
+            S: [
+              "a",
+              {
+                A: [
+                  "OR",
+                  {
+                    S: [
+                      "b",
+                      {
+                        A: ["LAMBDA"],
+                      },
+                    ],
+                  },
+                  {
+                    A: ["LAMBDA"],
+                  },
                 ],
-              }),
+              },
             ],
-          }),
+          },
+          ")",
+          {
+            A: [
+              {
+                S: [
+                  "a",
+                  {
+                    A: [
+                      {
+                        S: [
+                          "b",
+                          {
+                            A: [
+                              {
+                                S: [
+                                  "c",
+                                  {
+                                    A: ["LAMBDA"],
+                                  },
+                                ],
+                              },
+                              {
+                                A: ["LAMBDA"],
+                              },
+                            ],
+                          },
+                        ],
+                      },
+                      {
+                        A: ["LAMBDA"],
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                A: ["LAMBDA"],
+              },
+            ],
+          },
         ],
-      }),
+      },
     ],
-  });
+  } as ISimpleNode;
 
-  t.deepEqual(tree, expected);
+  t.deepEqual(tree.toJSON(), expected);
 });
 
-// TODO fix this test and probably figure a simpler way to structure it
-test.skip("Parser Star case1 a*b", (t) => {
+test("Parser Star case1 a*b", (t) => {
   const parser = new Parser([
     new Token("LITERAL", "a"),
     new Token("STAR", ""),
@@ -263,37 +274,40 @@ test.skip("Parser Star case1 a*b", (t) => {
   ]);
 
   const tree = parser.parse();
-  const expected = new ASTree({
-    kind: "ROOT",
-    children: [
-      new ASTree({
-        kind: "INTERSECTION",
-        children: [
-          new ASTree({
-            kind: "STAR",
-            children: [
-              new ASTree({
-                kind: "LITERAL",
-                lexeme: "a",
-              }),
+  const expected = {
+    ROOT: [
+      {
+        S: [
+          "a",
+          {
+            A: [
+              "STAR",
+              {
+                A: [
+                  {
+                    S: [
+                      "b",
+                      {
+                        A: ["LAMBDA"],
+                      },
+                    ],
+                  },
+                  {
+                    A: ["LAMBDA"],
+                  },
+                ],
+              },
             ],
-          }),
-          new ASTree({
-            kind: "LITERAL",
-            lexeme: "b",
-          }),
+          },
         ],
-      }),
+      },
     ],
-  });
+  } as ISimpleNode;
 
-  console.log("tree", JSON.stringify(tree, null, 2));
-
-  t.deepEqual(tree, expected);
+  t.deepEqual(tree.toJSON(), expected);
 });
 
-// TODO fix this test and probably figure a simpler way to structure it
-test.skip("Parser Star2: ab*", (t) => {
+test("Parser Star2: ab*", (t) => {
   const parser = new Parser([
     new Token("LITERAL", "a"),
     new Token("LITERAL", "b"),
@@ -302,35 +316,40 @@ test.skip("Parser Star2: ab*", (t) => {
   ]);
 
   const tree = parser.parse();
-  const expected = new ASTree({
-    kind: "ROOT",
-    children: [
-      new ASTree({
-        kind: "INTERSECTION",
-        children: [
-          new ASTree({
-            kind: "STAR",
-            children: [
-              new ASTree({
-                kind: "LITERAL",
-                lexeme: "a",
-              }),
+  const expected = {
+    ROOT: [
+      {
+        S: [
+          "a",
+          {
+            A: [
+              {
+                S: [
+                  "b",
+                  {
+                    A: [
+                      "STAR",
+                      {
+                        A: ["LAMBDA"],
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                A: ["LAMBDA"],
+              },
             ],
-          }),
-          new ASTree({
-            kind: "LITERAL",
-            lexeme: "b",
-          }),
+          },
         ],
-      }),
+      },
     ],
-  });
+  } as ISimpleNode;
 
-  t.deepEqual(tree, expected);
+  t.deepEqual(tree.toJSON(), expected);
 });
 
-// TODO fix this test and probably figure a simpler way to structure it
-test.skip("Parser Plus: a+b", (t) => {
+test("Parser Plus: a+b", (t) => {
   const parser = new Parser([
     new Token("LITERAL", "a"),
     new Token("PLUS", ""),
@@ -339,35 +358,40 @@ test.skip("Parser Plus: a+b", (t) => {
   ]);
 
   const tree = parser.parse();
-  const expected = new ASTree({
-    kind: "ROOT",
-    children: [
-      new ASTree({
-        kind: "INTERSECTION",
-        children: [
-          new ASTree({
-            kind: "PLUS",
-            children: [
-              new ASTree({
-                kind: "LITERAL",
-                lexeme: "a",
-              }),
+  const expected = {
+    ROOT: [
+      {
+        S: [
+          "a",
+          {
+            A: [
+              "PLUS",
+              {
+                A: [
+                  {
+                    S: [
+                      "b",
+                      {
+                        A: ["LAMBDA"],
+                      },
+                    ],
+                  },
+                  {
+                    A: ["LAMBDA"],
+                  },
+                ],
+              },
             ],
-          }),
-          new ASTree({
-            kind: "LITERAL",
-            lexeme: "b",
-          }),
+          },
         ],
-      }),
+      },
     ],
-  });
+  } as ISimpleNode;
 
-  t.deepEqual(tree, expected);
+  t.deepEqual(tree.toJSON(), expected);
 });
 
-// TODO fix this test and probably figure a simpler way to structure it
-test.skip("Parser Star: (a|b)*", (t) => {
+test("Parser Star: (a|b)*", (t) => {
   const parser = new Parser([
     new Token("(", ""),
     new Token("LITERAL", "a"),
@@ -379,29 +403,46 @@ test.skip("Parser Star: (a|b)*", (t) => {
   ]);
 
   const tree = parser.parse();
-  const expected = new ASTree({
-    kind: "ROOT",
-    children: [
-      new ASTree({
-        kind: "STAR",
-        children: [
-          new ASTree({
-            kind: "UNION",
-            children: [
-              new ASTree({
-                kind: "LITERAL",
-                lexeme: "a",
-              }),
-              new ASTree({
-                kind: "LITERAL",
-                lexeme: "b",
-              }),
+  //console.log("Tree json", JSON.stringify(tree.toJSON(), null, 2));
+  const expected = {
+    ROOT: [
+      {
+        S: [
+          "(",
+          {
+            S: [
+              "a",
+              {
+                A: [
+                  "OR",
+                  {
+                    S: [
+                      "b",
+                      {
+                        A: ["LAMBDA"],
+                      },
+                    ],
+                  },
+                  {
+                    A: ["LAMBDA"],
+                  },
+                ],
+              },
             ],
-          }),
+          },
+          ")",
+          {
+            A: [
+              "STAR",
+              {
+                A: ["LAMBDA"],
+              },
+            ],
+          },
         ],
-      }),
+      },
     ],
-  });
+  } as ISimpleNode;
 
-  t.deepEqual(tree, expected);
+  t.deepEqual(tree.toJSON(), expected);
 });

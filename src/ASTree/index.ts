@@ -14,6 +14,13 @@ export enum EKind {
 
 export type NodeKind = string;
 
+// A simpler representation mostly for testing
+export interface ISimpleNode {
+  ROOT?: Array<ISimpleNode | string>;
+  S?: Array<ISimpleNode | string>;
+  A?: Array<ISimpleNode | string>;
+}
+
 export interface IAttributes {
   //TODO is this still used?
   done?: boolean;
@@ -122,6 +129,10 @@ export default class ASTree {
     return this.kind === EKind.LITERAL;
   }
 
+  isLiteral(): boolean {
+    return this.kind === EKind.LITERAL;
+  }
+
   isLiteralSet(): boolean {
     return this.kind === EKind.LITERAL && !!this.attributes.literalSet;
   }
@@ -151,6 +162,31 @@ export default class ASTree {
       const expectedKind = expectedChildren[index];
       return child?.kind === expectedKind;
     });
+  }
+
+  toJSON(): ISimpleNode | string {
+    if (
+      this.isLambda() ||
+      this.kind === "(" ||
+      this.kind === ")" ||
+      this.kind === "OR" ||
+      this.kind === "STAR" ||
+      this.kind === "PLUS"
+    ) {
+      return this.kind;
+    }
+
+    if (this.isLiteral()) {
+      return this.lexeme as string;
+    }
+
+    if (this.isLiteralSet()) {
+      return this.lexeme as string;
+    }
+
+    return ({
+      [this.kind]: this.children.map((child) => child.toJSON()),
+    } as unknown) as ISimpleNode;
   }
 
   toString(): string {
